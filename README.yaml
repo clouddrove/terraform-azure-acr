@@ -1,0 +1,65 @@
+
+
+---
+#
+# This is the canonical configuration for the `README.md`
+# Run `make readme` to rebuild the `README.md`
+#
+
+
+# Name of this project
+name: Terraform AZURE CONTAINER REGISTRY (ACR)
+
+# License of this project
+license: "APACHE"
+
+# Canonical GitHub repo
+github_repo: clouddrove/terraform-azure-acr
+
+# Badges to display
+badges:
+  - name: "Terraform"
+    image: "https://img.shields.io/badge/Terraform-v1.0.0-green"
+    url: "https://www.terraform.io"
+  - name: "Licence"
+    image: "https://img.shields.io/badge/License-APACHE-blue.svg"
+    url: "LICENSE.md"
+
+#  description of this project
+description: |-
+  Terraform module to create acr resource on AZURE.
+# extra content
+include:
+  - "terraform.md"
+
+# How to use this project
+# yamllint disable rule:line-length
+usage: |-
+  ### Simple Example
+  Here is an example of how you can use this module in your inventory structure:
+  ```hcl
+    module "container-registry" {
+        source               = "clouddrove/acr/azure"
+        resource_group_name  = module.resource_group.resource_group_name
+        location             = module.resource_group.resource_group_location
+        container_registry_config = {
+        name                          = "containerregistrydemoproject01"
+        admin_enabled                 = true
+        sku                           = "Premium"
+        public_network_access_enabled = false
+      }
+
+      retention_policy = {
+        days    = 10
+        enabled = true
+      }
+      enable_content_trust          = true
+      enable_private_endpoint       = true
+      virtual_network_name          = module.vnet.vnet_name
+      virtual_network_id            = join("", module.vnet.vnet_id)
+      subnet_id                     = module.name_specific_subnet.specific_subnet_id
+      private_subnet_address_prefix = module.name_specific_subnet.specific_subnet_address_prefixes
+      private_dns_name              = "privatelink.azurecr.io" # To be same for all ACR.
+    }
+ 
+    ```
