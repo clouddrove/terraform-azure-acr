@@ -189,3 +189,9 @@ variable "storage_account_id" {
   type    = string
   default = null
 }
+
+variable "private_dns_zone_vnet_link_registration_enabled" {
+  type        = bool
+  default     = true
+  description = "(Optional) Is auto-registration of virtual machine records in the virtual network in the Private DNS zone enabled?"
+}
