@@ -126,6 +126,7 @@ Here is an example of how you can use this module in your inventory structure:
 | name | Name  (e.g. `app` or `cluster`). | `string` | `""` | no |
 | network\_rule\_set | Manage network rules for Azure Container Registries | <pre>object({<br>    default_action = optional(string)<br>    ip_rule = optional(list(object({<br>      ip_range = string<br>    })))<br>    virtual_network = optional(list(object({<br>      subnet_id = string<br>    })))<br>  })</pre> | `null` | no |
 | private\_dns\_name | n/a | `string` | `""` | no |
+| private\_dns\_zone\_vnet\_link\_registration\_enabled | (Optional) Is auto-registration of virtual machine records in the virtual network in the Private DNS zone enabled? | `bool` | `true` | no |
 | private\_subnet\_address\_prefix | The name of the subnet for private endpoints | `any` | `null` | no |
 | repository | Terraform current module repo | `string` | `""` | no |
 | resource\_group\_name | A container that holds related resources for an Azure solution | `string` | `""` | no |
