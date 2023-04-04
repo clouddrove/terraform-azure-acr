@@ -11,12 +11,10 @@ variable "location" {
 variable "container_registry_config" {
   description = "Manages an Azure Container Registry"
   type = object({
-    name                          = string
-    admin_enabled                 = optional(bool)
-    sku                           = optional(string)
-    public_network_access_enabled = optional(bool)
-    quarantine_policy_enabled     = optional(bool)
-    zone_redundancy_enabled       = optional(bool)
+    name                      = string
+    sku                       = optional(string)
+    quarantine_policy_enabled = optional(bool)
+    zone_redundancy_enabled   = optional(bool)
   })
 }
 
@@ -49,12 +47,15 @@ variable "retention_policy" {
     days    = optional(number)
     enabled = optional(bool)
   })
-  default = null
+  default = {
+    days    = 10
+    enabled = true
+  }
 }
 
 variable "enable_content_trust" {
   description = "Boolean value to enable or disable Content trust in Azure Container Registry"
-  default     = false
+  default     = true
 }
 
 variable "identity_ids" {
@@ -93,12 +94,7 @@ variable "container_registry_webhooks" {
 
 variable "enable_private_endpoint" {
   description = "Manages a Private Endpoint to Azure Container Registry"
-  default     = false
-}
-
-variable "virtual_network_name" {
-  description = "The name of the virtual network"
-  default     = ""
+  default     = true
 }
 
 variable "existing_private_dns_zone" {
@@ -134,7 +130,7 @@ variable "tags" {
 
 variable "private_dns_name" {
   type    = string
-  default = ""
+  default = "privatelink.azurecr.io"
 }
 
 variable "name" {
@@ -194,4 +190,16 @@ variable "private_dns_zone_vnet_link_registration_enabled" {
   type        = bool
   default     = true
   description = "(Optional) Is auto-registration of virtual machine records in the virtual network in the Private DNS zone enabled?"
+}
+
+variable "public_network_access_enabled" {
+  type        = bool
+  default     = false
+  description = "To denied public access "
+}
+
+variable "admin_enabled" {
+  type        = bool
+  default     = true
+  description = "To enable of disable admin access"
 }

@@ -10,12 +10,12 @@ output "container_registry_login_server" {
 
 output "container_registry_admin_username" {
   description = "The Username associated with the Container Registry Admin account - if the admin account is enabled."
-  value       = var.container_registry_config.admin_enabled == true ? azurerm_container_registry.main.admin_username : null
+  value       = var.admin_enabled == true ? azurerm_container_registry.main.admin_username : null
 }
 
 output "container_registry_admin_password" {
   description = "The Username associated with the Container Registry Admin account - if the admin account is enabled."
-  value       = var.container_registry_config.admin_enabled == true ? azurerm_container_registry.main.admin_password : null
+  value       = var.admin_enabled == true ? azurerm_container_registry.main.admin_password : null
   sensitive   = true
 }
 
