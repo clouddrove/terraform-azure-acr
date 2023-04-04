@@ -109,10 +109,11 @@ Here is an example of how you can use this module in your inventory structure:
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | acr\_diag\_logs | Application Gateway Monitoring Category details for Azure Diagnostic setting | `list` | <pre>[<br>  "ContainerRegistryRepositoryEvents",<br>  "ContainerRegistryLoginEvents"<br>]</pre> | no |
-| container\_registry\_config | Manages an Azure Container Registry | <pre>object({<br>    name                          = string<br>    admin_enabled                 = optional(bool)<br>    sku                           = optional(string)<br>    public_network_access_enabled = optional(bool)<br>    quarantine_policy_enabled     = optional(bool)<br>    zone_redundancy_enabled       = optional(bool)<br>  })</pre> | n/a | yes |
+| admin\_enabled | To enable of disable admin access | `bool` | `true` | no |
+| container\_registry\_config | Manages an Azure Container Registry | <pre>object({<br>    name                      = string<br>    sku                       = optional(string)<br>    quarantine_policy_enabled = optional(bool)<br>    zone_redundancy_enabled   = optional(bool)<br>  })</pre> | n/a | yes |
 | container\_registry\_webhooks | Manages an Azure Container Registry Webhook | <pre>map(object({<br>    service_uri    = string<br>    actions        = list(string)<br>    status         = optional(string)<br>    scope          = string<br>    custom_headers = map(string)<br>  }))</pre> | `null` | no |
-| enable\_content\_trust | Boolean value to enable or disable Content trust in Azure Container Registry | `bool` | `false` | no |
-| enable\_private\_endpoint | Manages a Private Endpoint to Azure Container Registry | `bool` | `false` | no |
+| enable\_content\_trust | Boolean value to enable or disable Content trust in Azure Container Registry | `bool` | `true` | no |
+| enable\_private\_endpoint | Manages a Private Endpoint to Azure Container Registry | `bool` | `true` | no |
 | encryption | Encrypt registry using a customer-managed key | <pre>object({<br>    key_vault_key_id   = string<br>    identity_client_id = string<br>  })</pre> | `null` | no |
 | environment | Environment (e.g. `prod`, `dev`, `staging`). | `string` | `""` | no |
 | existing\_private\_dns\_zone | Name of the existing private DNS zone | `any` | `null` | no |
@@ -125,19 +126,19 @@ Here is an example of how you can use this module in your inventory structure:
 | managedby | ManagedBy, eg ''. | `string` | `""` | no |
 | name | Name  (e.g. `app` or `cluster`). | `string` | `""` | no |
 | network\_rule\_set | Manage network rules for Azure Container Registries | <pre>object({<br>    default_action = optional(string)<br>    ip_rule = optional(list(object({<br>      ip_range = string<br>    })))<br>    virtual_network = optional(list(object({<br>      subnet_id = string<br>    })))<br>  })</pre> | `null` | no |
-| private\_dns\_name | n/a | `string` | `""` | no |
+| private\_dns\_name | n/a | `string` | `"privatelink.azurecr.io"` | no |
 | private\_dns\_zone\_vnet\_link\_registration\_enabled | (Optional) Is auto-registration of virtual machine records in the virtual network in the Private DNS zone enabled? | `bool` | `true` | no |
 | private\_subnet\_address\_prefix | The name of the subnet for private endpoints | `any` | `null` | no |
+| public\_network\_access\_enabled | To denied public access | `bool` | `false` | no |
 | repository | Terraform current module repo | `string` | `""` | no |
 | resource\_group\_name | A container that holds related resources for an Azure solution | `string` | `""` | no |
-| retention\_policy | Set a retention policy for untagged manifests | <pre>object({<br>    days    = optional(number)<br>    enabled = optional(bool)<br>  })</pre> | `null` | no |
+| retention\_policy | Set a retention policy for untagged manifests | <pre>object({<br>    days    = optional(number)<br>    enabled = optional(bool)<br>  })</pre> | <pre>{<br>  "days": 10,<br>  "enabled": true<br>}</pre> | no |
 | scope\_map | Manages an Azure Container Registry scope map. Scope Maps are a preview feature only available in Premium SKU Container registries. | <pre>map(object({<br>    actions = list(string)<br>  }))</pre> | `null` | no |
 | storage\_account\_id | n/a | `string` | `null` | no |
 | storage\_account\_name | The name of the hub storage account to store logs | `any` | `null` | no |
 | subnet\_id | Subnet to be used for private endpoint | `list(string)` | `null` | no |
 | tags | A map of tags to add to all resources | `map(string)` | `{}` | no |
 | virtual\_network\_id | Virtual Network to be used for private endpoint | `string` | `null` | no |
-| virtual\_network\_name | The name of the virtual network | `string` | `""` | no |
 
 ## Outputs
 
