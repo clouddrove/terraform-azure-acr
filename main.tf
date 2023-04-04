@@ -18,9 +18,9 @@ resource "azurerm_container_registry" "main" {
   name                          = format("%s", var.container_registry_config.name)
   resource_group_name           = var.resource_group_name
   location                      = var.location
-  admin_enabled                 = var.container_registry_config.admin_enabled
+  admin_enabled                 = var.admin_enabled
   sku                           = var.container_registry_config.sku
-  public_network_access_enabled = var.container_registry_config.public_network_access_enabled
+  public_network_access_enabled = var.public_network_access_enabled
   quarantine_policy_enabled     = var.container_registry_config.quarantine_policy_enabled
   zone_redundancy_enabled       = var.container_registry_config.zone_redundancy_enabled
   tags                          = module.labels.tags
