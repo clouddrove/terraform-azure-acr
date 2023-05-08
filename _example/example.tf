@@ -51,7 +51,7 @@ module "subnet" {
 }
 
 module "container-registry" {
-  source              = "../"
+  source              = "clouddrove/acr/azure"
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
 
