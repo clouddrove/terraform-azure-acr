@@ -203,3 +203,58 @@ variable "admin_enabled" {
   default     = true
   description = "To enable of disable admin access"
 }
+
+variable "enable" {
+  type        = bool
+  default     = true
+  description = "Flag to control module creation."
+}
+
+variable "enable_diagnostic" {
+  type        = bool
+  default     = true
+  description = "Flag to control diagnostic setting resource creation."
+}
+
+variable "existing_private_dns_zone_resource_group_name" {
+  type        = string
+  default     = null
+  description = "The name of the existing resource group"
+}
+
+variable "alias_sub" {
+  type        = string
+  default     = null
+  description = "Subscription id for different sub in which dns zone is present."
+}
+
+variable "diff_sub" {
+  # To be set true when hosted DNS zone is in different subnscription.
+  type        = bool
+  default     = false
+  description = "Flag to tell whether dns zone is in different sub or not."
+}
+
+variable "multi_sub_vnet_link" {
+  type        = bool
+  default     = false
+  description = "Flag to control creation of vnet link for dns zone in different subscription"
+}
+
+variable "addon_vent_link" {
+  type        = bool
+  default     = false
+  description = "The name of the addon vnet "
+}
+
+variable "addon_resource_group_name" {
+  type        = string
+  default     = ""
+  description = "The name of the addon vnet resource group"
+}
+
+variable "addon_virtual_network_id" {
+  type        = string
+  default     = ""
+  description = "The name of the addon vnet link vnet id"
+}
