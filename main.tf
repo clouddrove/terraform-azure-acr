@@ -139,19 +139,14 @@ locals {
 
 resource "azurerm_private_endpoint" "pep1" {
   count               = var.enable && var.enable_private_endpoint ? 1 : 0
-  name                = format("%s-private-endpoint", var.container_registry_config.name)
+  name                = format("%s-pe-acr", module.labels.id)
   location            = var.location
   resource_group_name = var.resource_group_name
   subnet_id           = join("", var.subnet_id)
-  private_dns_zone_group {
-    name                 = "container-registry-group"
-    private_dns_zone_ids = [azurerm_private_dns_zone.dnszone1.0.id]
-  }
-
   private_service_connection {
     name                           = "containerregistryprivatelink"
     is_manual_connection           = false
-    private_connection_resource_id = azurerm_container_registry.main.*.id
+    private_connection_resource_id = azurerm_container_registry.main[0].id
     subresource_names              = ["registry"]
   }
   lifecycle {
@@ -172,17 +167,17 @@ resource "azurerm_private_dns_zone" "dnszone1" {
   count               = var.enable && var.existing_private_dns_zone == null && var.enable_private_endpoint ? 1 : 0
   name                = var.private_dns_name
   resource_group_name = var.resource_group_name
-  tags                = merge({ "Name" = format("%s", "Azure-Container-Registry-Private-DNS-Zone") }, module.labels.tags, )
+  tags                = module.labels.tags
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link1" {
-  count                 = var.enable && var.existing_private_dns_zone == null && var.enable_private_endpoint ? 1 : 0
-  name                  = "vnet-private-zone-link"
+  count                 = var.enable && var.enable_private_endpoint && var.diff_sub == false ? 1 : 0
+  name                  = var.existing_private_dns_zone == null ? format("%s-pdz-vnet-link-acr", module.labels.id) : format("%s-pdz-vnet-link-acr-1", module.labels.id)
   resource_group_name   = local.valid_rg_name
   private_dns_zone_name = local.private_dns_zone_name
   virtual_network_id    = var.virtual_network_id
   registration_enabled  = var.private_dns_zone_vnet_link_registration_enabled
-  tags                  = merge({ "Name" = format("%s", "vnet-private-zone-link") }, module.labels.tags, )
+  tags                  = module.labels.tags
 }
 
 

@@ -49,7 +49,9 @@ module "subnet" {
 }
 
 module "container-registry" {
-  source              = "clouddrove/acr/azure"
+  source              = "../"
+  name                = "test-acr"
+  environment         = "test"
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
 
@@ -59,9 +61,8 @@ module "container-registry" {
   }
 
   # to enable private endpoint.
-  virtual_network_id            = join("", module.vnet.vnet_id)
-  subnet_id                     = module.subnet.default_subnet_id
-  private_subnet_address_prefix = module.subnet.default_subnet_address_prefixes
+  virtual_network_id = join("", module.vnet.vnet_id)
+  subnet_id          = module.subnet.default_subnet_id
 
   ########Following to be uncommnented only when using DNS Zone from different subscription along with existing DNS zone.
 
