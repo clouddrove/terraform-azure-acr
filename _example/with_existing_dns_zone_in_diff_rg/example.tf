@@ -2,49 +2,48 @@ provider "azurerm" {
   features {}
 }
 
+locals {
+  name        = "app"
+  environment = "test"
+}
 
 ##----------------------------------------------------------------------------- 
 ## Virtual Network module call.
-## Virtual Network in which subnet will be created for private endpoint and for which vnet link will be created in private dns zone.
+## Virtual Network for which subnet will be created for private endpoint and vnet link will be created in private dns zone.
 ##-----------------------------------------------------------------------------
 module "resource_group" {
-  source  = "clouddrove/resource-group/azure"
-  version = "1.0.2"
-
-  name        = "app"
-  environment = "test"
+  source      = "clouddrove/resource-group/azure"
+  version     = "1.0.2"
+  name        = local.name
+  environment = local.environment
   label_order = ["name", "environment"]
   location    = "East US"
 }
-
 
 ##----------------------------------------------------------------------------- 
 ## Resource Group module call
 ## Resource group in which all resources will be deployed.
 ##-----------------------------------------------------------------------------
 module "vnet" {
-  depends_on = [module.resource_group]
-  source     = "clouddrove/vnet/azure"
-  version    = "1.0.2"
-
-  name                = "app"
-  environment         = "test"
+  depends_on          = [module.resource_group]
+  source              = "clouddrove/vnet/azure"
+  version             = "1.0.2"
+  name                = local.name
+  environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   address_space       = "10.0.0.0/16"
 }
-
 
 ##----------------------------------------------------------------------------- 
 ## Subnet module call.
 ## Subnet in which private endpoint will be created.
 ##-----------------------------------------------------------------------------
 module "subnet" {
-  source  = "clouddrove/subnet/azure"
-  version = "1.0.2"
-
-  name                 = "app"
-  environment          = "test"
+  source               = "clouddrove/subnet/azure"
+  version              = "1.0.2"
+  name                 = local.name
+  environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
   location             = module.resource_group.resource_group_location
   virtual_network_name = join("", module.vnet.vnet_name)
@@ -63,14 +62,13 @@ module "subnet" {
   ]
 }
 
-
 ##----------------------------------------------------------------------------- 
 ## ACR module call.
 ##-----------------------------------------------------------------------------
 module "container-registry" {
-  source              = "../"
-  name                = "acr" # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
-  environment         = "test"
+  source              = "../../"
+  name                = local.name # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
+  environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   container_registry_config = {
@@ -84,10 +82,8 @@ module "container-registry" {
   virtual_network_id = join("", module.vnet.vnet_id)
   subnet_id          = module.subnet.default_subnet_id
   ##----------------------------------------------------------------------------- 
-  ## Specify following variales when private dns zone is in different subscription.
+  ## Specify following variales when private dns zone is in same subscription but in different resource group
   ##-----------------------------------------------------------------------------
-  diff_sub                                      = true
-  alias_sub                                     = "35XXXXXXXXXXXX67"       # Subcription id in which dns zone is present.
   existing_private_dns_zone                     = "privatelink.azurecr.io" # Name of private dns zone remain same for acr. 
   existing_private_dns_zone_resource_group_name = "example_test_rg"
 }
