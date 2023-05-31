@@ -109,14 +109,22 @@ Here is an example of how you can use this module in your inventory structure:
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | acr\_diag\_logs | Application Gateway Monitoring Category details for Azure Diagnostic setting | `list` | <pre>[<br>  "ContainerRegistryRepositoryEvents",<br>  "ContainerRegistryLoginEvents"<br>]</pre> | no |
+| addon\_resource\_group\_name | The name of the addon vnet resource group | `string` | `""` | no |
+| addon\_vent\_link | The name of the addon vnet | `bool` | `false` | no |
+| addon\_virtual\_network\_id | The name of the addon vnet link vnet id | `string` | `""` | no |
 | admin\_enabled | To enable of disable admin access | `bool` | `true` | no |
+| alias\_sub | Subscription id for different sub in which dns zone is present. | `string` | `null` | no |
 | container\_registry\_config | Manages an Azure Container Registry | <pre>object({<br>    name                      = string<br>    sku                       = optional(string)<br>    quarantine_policy_enabled = optional(bool)<br>    zone_redundancy_enabled   = optional(bool)<br>  })</pre> | n/a | yes |
 | container\_registry\_webhooks | Manages an Azure Container Registry Webhook | <pre>map(object({<br>    service_uri    = string<br>    actions        = list(string)<br>    status         = optional(string)<br>    scope          = string<br>    custom_headers = map(string)<br>  }))</pre> | `null` | no |
+| diff\_sub | Flag to tell whether dns zone is in different sub or not. | `bool` | `false` | no |
+| enable | Flag to control module creation. | `bool` | `true` | no |
 | enable\_content\_trust | Boolean value to enable or disable Content trust in Azure Container Registry | `bool` | `true` | no |
+| enable\_diagnostic | Flag to control diagnostic setting resource creation. | `bool` | `true` | no |
 | enable\_private\_endpoint | Manages a Private Endpoint to Azure Container Registry | `bool` | `true` | no |
 | encryption | Encrypt registry using a customer-managed key | <pre>object({<br>    key_vault_key_id   = string<br>    identity_client_id = string<br>  })</pre> | `null` | no |
 | environment | Environment (e.g. `prod`, `dev`, `staging`). | `string` | `""` | no |
 | existing\_private\_dns\_zone | Name of the existing private DNS zone | `any` | `null` | no |
+| existing\_private\_dns\_zone\_resource\_group\_name | The name of the existing resource group | `string` | `null` | no |
 | georeplications | A list of Azure locations where the container registry should be geo-replicated | <pre>list(object({<br>    location                = string<br>    zone_redundancy_enabled = optional(bool)<br>  }))</pre> | `[]` | no |
 | identity\_ids | Specifies a list of user managed identity ids to be assigned. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned` | `any` | `null` | no |
 | label\_order | Label order, e.g. sequence of application name and environment `name`,`environment`,'attribute' [`webserver`,`qa`,`devops`,`public`,] . | `list(any)` | `[]` | no |
@@ -124,6 +132,7 @@ Here is an example of how you can use this module in your inventory structure:
 | log\_analytics\_workspace\_id | log\_analytics\_workspace\_id | `string` | `null` | no |
 | log\_analytics\_workspace\_name | The name of log analytics workspace name | `any` | `null` | no |
 | managedby | ManagedBy, eg ''. | `string` | `""` | no |
+| multi\_sub\_vnet\_link | Flag to control creation of vnet link for dns zone in different subscription | `bool` | `false` | no |
 | name | Name  (e.g. `app` or `cluster`). | `string` | `""` | no |
 | network\_rule\_set | Manage network rules for Azure Container Registries | <pre>object({<br>    default_action = optional(string)<br>    ip_rule = optional(list(object({<br>      ip_range = string<br>    })))<br>    virtual_network = optional(list(object({<br>      subnet_id = string<br>    })))<br>  })</pre> | `null` | no |
 | private\_dns\_name | n/a | `string` | `"privatelink.azurecr.io"` | no |
