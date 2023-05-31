@@ -2,6 +2,10 @@ provider "azurerm" {
   features {}
 }
 
+##----------------------------------------------------------------------------- 
+## Virtual Network module call.
+## Virtual Network for which subnet will be created for private endpoint and vnet link will be created in private dns zone.
+##-----------------------------------------------------------------------------
 module "resource_group" {
   source  = "clouddrove/resource-group/azure"
   version = "1.0.2"
@@ -11,7 +15,11 @@ module "resource_group" {
   label_order = ["name", "environment"]
   location    = "East US"
 }
-#Vnet
+
+##----------------------------------------------------------------------------- 
+## Resource Group module call
+## Resource group in which all resources will be deployed.
+##-----------------------------------------------------------------------------
 module "vnet" {
   depends_on = [module.resource_group]
   source     = "clouddrove/vnet/azure"
@@ -24,6 +32,10 @@ module "vnet" {
   address_space       = "10.0.0.0/16"
 }
 
+##----------------------------------------------------------------------------- 
+## Subnet module call.
+## Subnet in which private endpoint will be created.
+##-----------------------------------------------------------------------------
 module "subnet" {
   source  = "clouddrove/subnet/azure"
   version = "1.0.2"
@@ -48,28 +60,24 @@ module "subnet" {
   ]
 }
 
+
+##----------------------------------------------------------------------------- 
+## ACR module call.
+##-----------------------------------------------------------------------------
 module "container-registry" {
   source              = "../"
-  name                = "test-acr"
+  name                = "acr" # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
   environment         = "test"
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
-
   container_registry_config = {
-    name = "cdacr1234"
+    name = "cdacr1234" # Name of Container Registry
     sku  = "Premium"
   }
-
-  # to enable private endpoint.
+  ##----------------------------------------------------------------------------- 
+  ## To be mentioned for private endpoint, because private endpoint is enabled by default.
+  ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
+  ##-----------------------------------------------------------------------------
   virtual_network_id = join("", module.vnet.vnet_id)
   subnet_id          = module.subnet.default_subnet_id
-
-  ########Following to be uncommnented only when using DNS Zone from different subscription along with existing DNS zone.
-
-  # diff_sub                                      = true
-  # alias_sub                                     = ""
-
-  #########Following to be uncommmented when using DNS zone from different resource group or different subscription.
-  # existing_private_dns_zone                     = ""
-  # existing_private_dns_zone_resource_group_name = ""
 }
