@@ -8,8 +8,8 @@ locals {
 }
 
 ##----------------------------------------------------------------------------- 
-## Virtual Network module call.
-## Virtual Network in which subnet will be created for private endpoint and for which vnet link will be created in private dns zone.
+## Resource Group module call
+## Resource group in which all resources will be deployed.
 ##-----------------------------------------------------------------------------
 module "resource_group" {
   source  = "clouddrove/resource-group/azure"
@@ -22,8 +22,8 @@ module "resource_group" {
 }
 
 ##----------------------------------------------------------------------------- 
-## Resource Group module call
-## Resource group in which all resources will be deployed.
+## Virtual Network module call.
+## Virtual Network in which subnet will be created for private endpoint and for which vnet link will be created in private dns zone.
 ##-----------------------------------------------------------------------------
 module "vnet" {
   depends_on          = [module.resource_group]
