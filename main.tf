@@ -1,6 +1,6 @@
-#---------------------------------
-# Local declarations
-#---------------------------------
+##----------------------------------------------------------------------------- 
+## Labels module callled that will be used for naming and tags.   
+##-----------------------------------------------------------------------------
 module "labels" {
 
   source  = "clouddrove/labels/azure"
@@ -13,7 +13,9 @@ module "labels" {
   repository  = var.repository
 }
 
-
+##----------------------------------------------------------------------------- 
+## Below resources will create ACR and its components.   
+##-----------------------------------------------------------------------------
 resource "azurerm_container_registry" "main" {
   count                         = var.enable ? 1 : 0
   name                          = format("%s", var.container_registry_config.name)
@@ -125,18 +127,9 @@ resource "azurerm_container_registry_webhook" "main" {
   }
 }
 
-provider "azurerm" {
-  alias = "peer"
-  features {}
-  subscription_id = var.alias_sub
-}
-
-locals {
-  valid_rg_name         = var.existing_private_dns_zone == null ? var.resource_group_name : var.existing_private_dns_zone_resource_group_name
-  private_dns_zone_name = var.existing_private_dns_zone == null ? join("", azurerm_private_dns_zone.dnszone1.*.name) : var.existing_private_dns_zone
-}
-
-
+##----------------------------------------------------------------------------- 
+## Below resource will create private endpoint resource for ACR.    
+##-----------------------------------------------------------------------------
 resource "azurerm_private_endpoint" "pep1" {
   count               = var.enable && var.enable_private_endpoint ? 1 : 0
   name                = format("%s-pe-acr", module.labels.id)
@@ -156,13 +149,36 @@ resource "azurerm_private_endpoint" "pep1" {
   }
 }
 
+##----------------------------------------------------------------------------- 
+## Provider block added, to be used when private dns zone is in different subscription and vnet link is to be created in that private dns zone name. 
+## Add different subscription id in 'alias_sub' variable. 
+##-----------------------------------------------------------------------------
+provider "azurerm" {
+  alias = "peer"
+  features {}
+  subscription_id = var.alias_sub
+}
+
+##----------------------------------------------------------------------------- 
+## Locals defined to determine the resource group in which private dns zone must be created or existing private dns zone is present. 
+##-----------------------------------------------------------------------------
+locals {
+  valid_rg_name         = var.existing_private_dns_zone == null ? var.resource_group_name : var.existing_private_dns_zone_resource_group_name
+  private_dns_zone_name = var.existing_private_dns_zone == null ? join("", azurerm_private_dns_zone.dnszone1.*.name) : var.existing_private_dns_zone
+}
+
+##----------------------------------------------------------------------------- 
+## Data block called to get private ip of private endpoint that will be used in creating dns a-record. 
+##-----------------------------------------------------------------------------
 data "azurerm_private_endpoint_connection" "private-ip" {
   count               = var.enable && var.enable_private_endpoint ? 1 : 0
   name                = join("", azurerm_private_endpoint.pep1.*.name)
   resource_group_name = var.resource_group_name
 }
 
-
+##----------------------------------------------------------------------------- 
+## Private dns zone will be created if private endpoint is enabled and no existing dns zone is provided.  
+##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone" "dnszone1" {
   count               = var.enable && var.existing_private_dns_zone == null && var.enable_private_endpoint ? 1 : 0
   name                = var.private_dns_name
@@ -170,7 +186,12 @@ resource "azurerm_private_dns_zone" "dnszone1" {
   tags                = module.labels.tags
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "vent-link1" {
+##----------------------------------------------------------------------------- 
+## Below vnet link resource will be created when private dns zone is present in same subscription and same resource group or same subscription and different resource group. 
+## Different resource will be used when existing private dns zone is provided. 
+## Resource group and private dns zone in which vnet link is to be created will be decided from condition present in locals and will be passed as locals. 
+##-----------------------------------------------------------------------------
+resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-same-sub" {
   count                 = var.enable && var.enable_private_endpoint && var.diff_sub == false ? 1 : 0
   name                  = var.existing_private_dns_zone == null ? format("%s-pdz-vnet-link-acr", module.labels.id) : format("%s-pdz-vnet-link-acr-1", module.labels.id)
   resource_group_name   = local.valid_rg_name
@@ -180,7 +201,10 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link1" {
   tags                  = module.labels.tags
 }
 
-
+##----------------------------------------------------------------------------- 
+## Below vnet link resource will be created when existing dns zone is present in different subscription. 
+## Add different subscription id in alias sub variable to use provider for that particular subscription. 
+##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-diff_sub" {
   provider              = azurerm.peer
   count                 = var.enable && var.enable_private_endpoint && var.diff_sub == true ? 1 : 0
@@ -191,6 +215,10 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-diff_sub" {
   tags                  = module.labels.tags
 }
 
+##----------------------------------------------------------------------------- 
+## Below vnet link resource is used when you have to create multiple vnet link in existing dns zone.
+## Call the module again and set enable variable = false and add variables specific only to this resource.   
+##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-multi-subs" {
   provider              = azurerm.peer
   count                 = var.multi_sub_vnet_link && var.existing_private_dns_zone != null ? 1 : 0
@@ -201,6 +229,9 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-multi-subs" 
   tags                  = module.labels.tags
 }
 
+##----------------------------------------------------------------------------- 
+## Below vnet link resource will be created when you have to add extra vnet link in same subscription. 
+##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
   count                 = var.enable && var.addon_vent_link ? 1 : 0
   name                  = format("%s-pdz-vnet-link-acr-addon", module.labels.id)
@@ -210,7 +241,10 @@ resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
   tags                  = module.labels.tags
 }
 
-resource "azurerm_private_dns_a_record" "arecord" {
+##----------------------------------------------------------------------------- 
+## Below resource will create a-record in private dns zone when private dns zone is in same subscription.   
+##-----------------------------------------------------------------------------
+resource "azurerm_private_dns_a_record" "arecord-same_sub" {
   count               = var.enable && var.enable_private_endpoint && var.diff_sub == false ? 1 : 0
   name                = join("", azurerm_container_registry.main.*.name)
   zone_name           = local.private_dns_zone_name
@@ -225,7 +259,10 @@ resource "azurerm_private_dns_a_record" "arecord" {
   }
 }
 
-resource "azurerm_private_dns_a_record" "arecord-1" {
+##----------------------------------------------------------------------------- 
+## Below resource will create a-record in private dns zone when private dns zone is in different subscription.   
+##-----------------------------------------------------------------------------
+resource "azurerm_private_dns_a_record" "arecord_diff-sub" {
   count               = var.enable && var.enable_private_endpoint && var.diff_sub == true ? 1 : 0
   provider            = azurerm.peer
   name                = join("", azurerm_container_registry.main.*.name)
@@ -241,6 +278,9 @@ resource "azurerm_private_dns_a_record" "arecord-1" {
   }
 }
 
+##----------------------------------------------------------------------------- 
+## Below resource will create diagnostic setting for ACR.   
+##-----------------------------------------------------------------------------
 resource "azurerm_monitor_diagnostic_setting" "acr-diag" {
   count                      = var.enable_diagnostic && var.log_analytics_workspace_name != null || var.storage_account_name != null ? 1 : 0
   name                       = lower("acr-${var.container_registry_config.name}-diag")

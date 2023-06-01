@@ -1,3 +1,39 @@
+variable "name" {
+  type        = string
+  default     = ""
+  description = "Name  (e.g. `app` or `cluster`)."
+}
+
+variable "environment" {
+  type        = string
+  default     = ""
+  description = "Environment (e.g. `prod`, `dev`, `staging`)."
+}
+
+variable "repository" {
+  type        = string
+  default     = ""
+  description = "Terraform current module repo"
+}
+
+variable "label_order" {
+  type        = list(any)
+  default     = []
+  description = "Label order, e.g. sequence of application name and environment `name`,`environment`,'attribute' [`webserver`,`qa`,`devops`,`public`,] ."
+}
+
+variable "managedby" {
+  type        = string
+  default     = ""
+  description = "ManagedBy, eg ''."
+}
+
+variable "enable" {
+  type        = bool
+  default     = true
+  description = "Flag to control module creation."
+}
+
 variable "resource_group_name" {
   description = "A container that holds related resources for an Azure solution"
   default     = ""
@@ -122,45 +158,9 @@ variable "acr_diag_logs" {
   default     = ["ContainerRegistryRepositoryEvents", "ContainerRegistryLoginEvents"]
 }
 
-variable "tags" {
-  description = "A map of tags to add to all resources"
-  type        = map(string)
-  default     = {}
-}
-
 variable "private_dns_name" {
   type    = string
   default = "privatelink.azurecr.io"
-}
-
-variable "name" {
-  type        = string
-  default     = ""
-  description = "Name  (e.g. `app` or `cluster`)."
-}
-
-variable "environment" {
-  type        = string
-  default     = ""
-  description = "Environment (e.g. `prod`, `dev`, `staging`)."
-}
-
-variable "repository" {
-  type        = string
-  default     = ""
-  description = "Terraform current module repo"
-}
-
-variable "label_order" {
-  type        = list(any)
-  default     = []
-  description = "Label order, e.g. sequence of application name and environment `name`,`environment`,'attribute' [`webserver`,`qa`,`devops`,`public`,] ."
-}
-
-variable "managedby" {
-  type        = string
-  default     = ""
-  description = "ManagedBy, eg ''."
 }
 
 variable "subnet_id" {
@@ -204,12 +204,6 @@ variable "admin_enabled" {
   description = "To enable of disable admin access"
 }
 
-variable "enable" {
-  type        = bool
-  default     = true
-  description = "Flag to control module creation."
-}
-
 variable "enable_diagnostic" {
   type        = bool
   default     = true
@@ -228,8 +222,10 @@ variable "alias_sub" {
   description = "Subscription id for different sub in which dns zone is present."
 }
 
+##----------------------------------------------------------------------------- 
+## To be set when existing dns zone is in diffrent subscription.
+##-----------------------------------------------------------------------------
 variable "diff_sub" {
-  # To be set true when hosted DNS zone is in different subnscription.
   type        = bool
   default     = false
   description = "Flag to tell whether dns zone is in different sub or not."
