@@ -146,7 +146,6 @@ Here is an example of how you can use this module in your inventory structure:
 | storage\_account\_id | n/a | `string` | `null` | no |
 | storage\_account\_name | The name of the hub storage account to store logs | `any` | `null` | no |
 | subnet\_id | Subnet to be used for private endpoint | `list(string)` | `null` | no |
-| tags | A map of tags to add to all resources | `map(string)` | `{}` | no |
 | virtual\_network\_id | Virtual Network to be used for private endpoint | `string` | `null` | no |
 
 ## Outputs
