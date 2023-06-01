@@ -284,7 +284,7 @@ resource "azurerm_private_dns_a_record" "arecord_diff-sub" {
 resource "azurerm_monitor_diagnostic_setting" "acr-diag" {
   count                      = var.enable_diagnostic && var.log_analytics_workspace_name != null || var.storage_account_name != null ? 1 : 0
   name                       = lower("acr-${var.container_registry_config.name}-diag")
-  target_resource_id         = azurerm_container_registry.main.*.id
+  target_resource_id         = azurerm_container_registry.main[0].id
   storage_account_id         = var.storage_account_name != null ? var.storage_account_id : null
   log_analytics_workspace_id = var.log_analytics_workspace_id
 
