@@ -132,7 +132,7 @@ resource "azurerm_container_registry_webhook" "main" {
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_endpoint" "pep1" {
   count               = var.enable && var.enable_private_endpoint ? 1 : 0
-  name                = format("%s-pe-acr", module.labels.id)
+  name                = format("%s-%s-pe-acr", var.container_registry_config.name, module.labels.id)
   location            = var.location
   resource_group_name = var.resource_group_name
   subnet_id           = join("", var.subnet_id)
