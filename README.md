@@ -130,7 +130,6 @@ Here is an example of how you can use this module in your inventory structure:
 | label\_order | Label order, e.g. sequence of application name and environment `name`,`environment`,'attribute' [`webserver`,`qa`,`devops`,`public`,] . | `list(any)` | `[]` | no |
 | location | The location/region to keep all your network resources. To get the list of all locations with table format from azure cli, run 'az account list-locations -o table' | `string` | `""` | no |
 | log\_analytics\_workspace\_id | log\_analytics\_workspace\_id | `string` | `null` | no |
-| log\_analytics\_workspace\_name | The name of log analytics workspace name | `any` | `null` | no |
 | managedby | ManagedBy, eg ''. | `string` | `""` | no |
 | multi\_sub\_vnet\_link | Flag to control creation of vnet link for dns zone in different subscription | `bool` | `false` | no |
 | name | Name  (e.g. `app` or `cluster`). | `string` | `""` | no |
@@ -142,9 +141,9 @@ Here is an example of how you can use this module in your inventory structure:
 | repository | Terraform current module repo | `string` | `""` | no |
 | resource\_group\_name | A container that holds related resources for an Azure solution | `string` | `""` | no |
 | retention\_policy | Set a retention policy for untagged manifests | <pre>object({<br>    days    = optional(number)<br>    enabled = optional(bool)<br>  })</pre> | <pre>{<br>  "days": 10,<br>  "enabled": true<br>}</pre> | no |
+| same\_vnet | Variable to be set when multiple acr having common DNS in same vnet. | `bool` | `false` | no |
 | scope\_map | Manages an Azure Container Registry scope map. Scope Maps are a preview feature only available in Premium SKU Container registries. | <pre>map(object({<br>    actions = list(string)<br>  }))</pre> | `null` | no |
 | storage\_account\_id | n/a | `string` | `null` | no |
-| storage\_account\_name | The name of the hub storage account to store logs | `any` | `null` | no |
 | subnet\_id | Subnet to be used for private endpoint | `list(string)` | `null` | no |
 | virtual\_network\_id | Virtual Network to be used for private endpoint | `string` | `null` | no |
 
