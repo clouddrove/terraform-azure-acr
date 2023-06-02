@@ -192,7 +192,7 @@ resource "azurerm_private_dns_zone" "dnszone1" {
 ## Resource group and private dns zone in which vnet link is to be created will be decided from condition present in locals and will be passed as locals. 
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-same-sub" {
-  count                 = var.enable && var.enable_private_endpoint && var.diff_sub == false ? 1 : 0
+  count                 = var.enable && var.enable_private_endpoint && var.diff_sub == false && var.same_vnet == false ? 1 : 0
   name                  = var.existing_private_dns_zone == null ? format("%s-pdz-vnet-link-acr", module.labels.id) : format("%s-pdz-vnet-link-acr-1", module.labels.id)
   resource_group_name   = local.valid_rg_name
   private_dns_zone_name = local.private_dns_zone_name
@@ -282,10 +282,10 @@ resource "azurerm_private_dns_a_record" "arecord_diff-sub" {
 ## Below resource will create diagnostic setting for ACR.   
 ##-----------------------------------------------------------------------------
 resource "azurerm_monitor_diagnostic_setting" "acr-diag" {
-  count                      = var.enable_diagnostic && var.log_analytics_workspace_name != null || var.storage_account_name != null ? 1 : 0
+  count                      = var.enable && var.enable_diagnostic ? 1 : 0
   name                       = lower("acr-${var.container_registry_config.name}-diag")
   target_resource_id         = azurerm_container_registry.main[0].id
-  storage_account_id         = var.storage_account_name != null ? var.storage_account_id : null
+  storage_account_id         = var.storage_account_id
   log_analytics_workspace_id = var.log_analytics_workspace_id
 
   dynamic "log" {

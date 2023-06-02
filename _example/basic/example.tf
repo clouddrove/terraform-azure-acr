@@ -22,4 +22,5 @@ module "container-registry" {
   ##-----------------------------------------------------------------------------
   virtual_network_id = "vnet_id"
   subnet_id          = "subnet_id"
+  enable_diagnostic  = false
 }

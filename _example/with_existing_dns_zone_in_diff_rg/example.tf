@@ -75,6 +75,7 @@ module "container-registry" {
     name = "cdacr1234" # Name of Container Registry
     sku  = "Premium"
   }
+  log_analytics_workspace_id = ""
   ##----------------------------------------------------------------------------- 
   ## To be mentioned for private endpoint, because private endpoint is enabled by default.
   ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  

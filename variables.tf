@@ -143,16 +143,6 @@ variable "private_subnet_address_prefix" {
   default     = null
 }
 
-variable "log_analytics_workspace_name" {
-  description = "The name of log analytics workspace name"
-  default     = null
-}
-
-variable "storage_account_name" {
-  description = "The name of the hub storage account to store logs"
-  default     = null
-}
-
 variable "acr_diag_logs" {
   description = "Application Gateway Monitoring Category details for Azure Diagnostic setting"
   default     = ["ContainerRegistryRepositoryEvents", "ContainerRegistryLoginEvents"]
@@ -253,4 +243,10 @@ variable "addon_virtual_network_id" {
   type        = string
   default     = ""
   description = "The name of the addon vnet link vnet id"
+}
+
+variable "same_vnet" {
+  type        = bool
+  default     = false
+  description = "Variable to be set when multiple acr having common DNS in same vnet."
 }
