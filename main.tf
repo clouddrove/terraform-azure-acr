@@ -132,12 +132,16 @@ resource "azurerm_container_registry_webhook" "main" {
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_endpoint" "pep1" {
   count               = var.enable && var.enable_private_endpoint ? 1 : 0
-  name                = format("%s-pe-acr", module.labels.id)
+  name                = format("%s-%s-pe-acr", var.container_registry_config.name, module.labels.id)
   location            = var.location
   resource_group_name = var.resource_group_name
   subnet_id           = join("", var.subnet_id)
+  private_dns_zone_group {
+    name                 = format("%s-%s-acr", var.container_registry_config.name, "dns-zone-group")
+    private_dns_zone_ids = var.existing_private_dns_zone == null ? [azurerm_private_dns_zone.dnszone1[0].id] : var.existing_private_dns_zone_id
+  }
   private_service_connection {
-    name                           = "containerregistryprivatelink"
+    name                           = format("%s-%s-acr", var.container_registry_config.name, "private-link")
     is_manual_connection           = false
     private_connection_resource_id = azurerm_container_registry.main[0].id
     subresource_names              = ["registry"]
@@ -239,43 +243,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
   private_dns_zone_name = var.existing_private_dns_zone == null ? join("", azurerm_private_dns_zone.dnszone1.*.name) : var.existing_private_dns_zone
   virtual_network_id    = var.addon_virtual_network_id
   tags                  = module.labels.tags
-}
-
-##----------------------------------------------------------------------------- 
-## Below resource will create a-record in private dns zone when private dns zone is in same subscription.   
-##-----------------------------------------------------------------------------
-resource "azurerm_private_dns_a_record" "arecord-same_sub" {
-  count               = var.enable && var.enable_private_endpoint && var.diff_sub == false ? 1 : 0
-  name                = join("", azurerm_container_registry.main.*.name)
-  zone_name           = local.private_dns_zone_name
-  resource_group_name = local.valid_rg_name
-  ttl                 = 3600
-  records             = [data.azurerm_private_endpoint_connection.private-ip.0.private_service_connection.0.private_ip_address]
-  tags                = module.labels.tags
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-##----------------------------------------------------------------------------- 
-## Below resource will create a-record in private dns zone when private dns zone is in different subscription.   
-##-----------------------------------------------------------------------------
-resource "azurerm_private_dns_a_record" "arecord_diff-sub" {
-  count               = var.enable && var.enable_private_endpoint && var.diff_sub == true ? 1 : 0
-  provider            = azurerm.peer
-  name                = join("", azurerm_container_registry.main.*.name)
-  zone_name           = local.private_dns_zone_name
-  resource_group_name = local.valid_rg_name
-  ttl                 = 3600
-  records             = [data.azurerm_private_endpoint_connection.private-ip.0.private_service_connection.0.private_ip_address]
-  tags                = module.labels.tags
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
 }
 
 ##----------------------------------------------------------------------------- 

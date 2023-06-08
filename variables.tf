@@ -250,3 +250,9 @@ variable "same_vnet" {
   default     = false
   description = "Variable to be set when multiple acr having common DNS in same vnet."
 }
+
+variable "existing_private_dns_zone_id" {
+  type        = list(any)
+  default     = null
+  description = "ID of existing private dns zone. To be used in dns configuration group in private endpoint."
+}

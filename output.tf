@@ -63,3 +63,8 @@ output "container_registry_private_endpoint_fqdn" {
   description = "Azure Container Registry private endpoint FQDN Addresses"
   value       = var.enable_private_endpoint ? flatten(azurerm_private_endpoint.pep1.0.custom_dns_configs.*.fqdn) : null
 }
+
+output "private_dns_zone_id" {
+  description = "ID of private dns zone. To be used when there is existing dns zone and id is to be passed in private endpoint dns configuration group."
+  value       = tolist(azurerm_private_dns_zone.dnszone1.*.id)
+}
