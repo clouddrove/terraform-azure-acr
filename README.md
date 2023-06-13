@@ -124,6 +124,7 @@ Here is an example of how you can use this module in your inventory structure:
 | encryption | Encrypt registry using a customer-managed key | <pre>object({<br>    key_vault_key_id   = string<br>    identity_client_id = string<br>  })</pre> | `null` | no |
 | environment | Environment (e.g. `prod`, `dev`, `staging`). | `string` | `""` | no |
 | existing\_private\_dns\_zone | Name of the existing private DNS zone | `any` | `null` | no |
+| existing\_private\_dns\_zone\_id | ID of existing private dns zone. To be used in dns configuration group in private endpoint. | `list(any)` | `null` | no |
 | existing\_private\_dns\_zone\_resource\_group\_name | The name of the existing resource group | `string` | `null` | no |
 | georeplications | A list of Azure locations where the container registry should be geo-replicated | <pre>list(object({<br>    location                = string<br>    zone_redundancy_enabled = optional(bool)<br>  }))</pre> | `[]` | no |
 | identity\_ids | Specifies a list of user managed identity ids to be assigned. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned` | `any` | `null` | no |
@@ -164,6 +165,7 @@ Here is an example of how you can use this module in your inventory structure:
 | container\_registry\_scope\_map\_id | The ID of the Container Registry scope map |
 | container\_registry\_token\_id | The ID of the Container Registry token |
 | container\_registry\_webhook\_id | The ID of the Container Registry Webhook |
+| private\_dns\_zone\_id | ID of private dns zone. To be used when there is existing dns zone and id is to be passed in private endpoint dns configuration group. |
 
 
 
