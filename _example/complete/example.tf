@@ -75,6 +75,24 @@ module "log-analytics" {
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }
 
+module "vault" {
+  source              = "clouddrove/key-vault/azure"
+  version             = "1.0.5"
+  name                = "appdvgcyus23654"
+  environment         = local.environment
+  resource_group_name = module.resource_group.resource_group_name
+  location            = module.resource_group.resource_group_location
+  virtual_network_id  = module.vnet.vnet_id
+  subnet_id           = module.subnet.default_subnet_id[0]
+  ##RBAC
+  enable_rbac_authorization = true
+  principal_id              = ["0f854e94-98ca-4258-9e9a-0c9752f7cf5e"]
+  role_definition_name      = ["Key Vault Administrator"]
+  #### enable diagnostic setting
+  diagnostic_setting_enable = false
+  #log_analytics_workspace_id = module.log-analytics.workspace_id ## when diagnostic_setting_enable = true, need to add log analytics workspace id
+}
+
 ##----------------------------------------------------------------------------- 
 ## ACR module call.
 ##-----------------------------------------------------------------------------
@@ -93,6 +111,11 @@ module "container-registry" {
   ## To be mentioned for private endpoint, because private endpoint is enabled by default.
   ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
   ##-----------------------------------------------------------------------------
-  virtual_network_id = module.vnet.vnet_id
-  subnet_id          = module.subnet.default_subnet_id[0]
+  virtual_network_id          = module.vnet.vnet_id
+  subnet_id                   = module.subnet.default_subnet_id[0]
+  encryption                  = true
+  key_vault_rbac_auth_enabled = true
+  #expiration_date = 
+  key_vault_id = module.vault.id
+
 }

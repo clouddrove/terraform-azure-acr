@@ -77,20 +77,19 @@ resource "azurerm_container_registry" "main" {
   }
 
   identity {
-    type         = var.identity_ids != null ? "SystemAssigned, UserAssigned" : "SystemAssigned"
+    type         = var.identity_ids != null || var.encryption ? "SystemAssigned, UserAssigned" : "SystemAssigned"
     identity_ids = var.identity_ids
   }
 
   dynamic "encryption" {
-    for_each = var.encryption != null ? [var.encryption] : []
+    for_each = var.encryption ? ["encryption"] : []
     content {
       enabled            = true
-      key_vault_key_id   = encryption.value.key_vault_key_id
-      identity_client_id = encryption.value.identity_client_id
+      key_vault_key_id   = azurerm_key_vault_key.kvkey[0].id
+      identity_client_id = azurerm_user_assigned_identity.identity[0].client_id
     }
   }
 }
-
 
 resource "azurerm_container_registry_scope_map" "main" {
   for_each                = var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
@@ -99,7 +98,6 @@ resource "azurerm_container_registry_scope_map" "main" {
   container_registry_name = azurerm_container_registry.main[0].name
   actions                 = each.value["actions"]
 }
-
 
 resource "azurerm_container_registry_token" "main" {
   for_each                = var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
@@ -126,6 +124,47 @@ resource "azurerm_container_registry_webhook" "main" {
       tags
     ]
   }
+}
+
+resource "azurerm_key_vault_key" "kvkey" {
+  depends_on = [azurerm_role_assignment.identity_assigned]
+  count      = var.enable && var.encryption ? 1 : 0
+  name       = format("acr-%s-cmk-key", module.labels.id)
+  #expiration_date = var.expiration_date
+  key_vault_id = var.key_vault_id
+  key_type     = "RSA"
+  key_size     = 2048
+  key_opts = [
+    "decrypt",
+    "encrypt",
+    "sign",
+    "unwrapKey",
+    "verify",
+    "wrapKey",
+  ]
+  rotation_policy {
+    automatic {
+      time_before_expiry = "P30D"
+    }
+
+    expire_after         = "P90D"
+    notify_before_expiry = "P29D"
+  }
+}
+
+resource "azurerm_role_assignment" "identity_assigned" {
+  depends_on           = [azurerm_user_assigned_identity.identity]
+  count                = var.enable && var.encryption && var.key_vault_rbac_auth_enabled ? 1 : 0
+  principal_id         = join("", azurerm_user_assigned_identity.identity.*.principal_id)
+  scope                = var.key_vault_id
+  role_definition_name = "Key Vault Crypto Service Encryption User"
+}
+
+resource "azurerm_user_assigned_identity" "identity" {
+  count               = var.enable && var.encryption ? 1 : 0
+  location            = var.location
+  name                = format("%s-acr-user_assigned-identity", module.labels.id)
+  resource_group_name = var.resource_group_name
 }
 
 ##----------------------------------------------------------------------------- 
@@ -260,7 +299,6 @@ resource "azurerm_monitor_diagnostic_setting" "acr-diag" {
       enabled  = true
     }
   }
-
   lifecycle {
     ignore_changes = [enabled_log, metric]
   }
