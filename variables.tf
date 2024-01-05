@@ -35,13 +35,16 @@ variable "enable" {
 }
 
 variable "resource_group_name" {
+  type        = string
+  default     = null
   description = "A container that holds related resources for an Azure solution"
-  default     = ""
+
 }
 
 variable "location" {
+  type        = string
+  default     = null
   description = "The location/region to keep all your network resources. To get the list of all locations with table format from azure cli, run 'az account list-locations -o table'"
-  default     = ""
 }
 
 variable "container_registry_config" {
@@ -52,6 +55,13 @@ variable "container_registry_config" {
     quarantine_policy_enabled = optional(bool)
     zone_redundancy_enabled   = optional(bool)
   })
+}
+
+#azure_service_bypass
+variable "azure_services_bypass" {
+  description = "Whether to allow trusted Azure services to access a network restricted Container Registry? Possible values are None and AzureServices. Defaults to AzureServices"
+  type        = string
+  default     = "AzureServices"
 }
 
 variable "georeplications" {
@@ -90,13 +100,15 @@ variable "retention_policy" {
 }
 
 variable "enable_content_trust" {
-  description = "Boolean value to enable or disable Content trust in Azure Container Registry"
+  type        = bool
   default     = true
+  description = "Boolean value to enable or disable Content trust in Azure Container Registry"
 }
 
 variable "identity_ids" {
-  description = "Specifies a list of user managed identity ids to be assigned. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned`"
+  type        = list(string)
   default     = null
+  description = "Specifies a list of user managed identity ids to be assigned. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned`"
 }
 
 variable "encryption" {
@@ -129,23 +141,15 @@ variable "container_registry_webhooks" {
 }
 
 variable "enable_private_endpoint" {
-  description = "Manages a Private Endpoint to Azure Container Registry"
+  type        = bool
   default     = true
+  description = "Manages a Private Endpoint to Azure Container Registry"
 }
 
 variable "existing_private_dns_zone" {
+  type        = string
+  default     = null
   description = "Name of the existing private DNS zone"
-  default     = null
-}
-
-variable "private_subnet_address_prefix" {
-  description = "The name of the subnet for private endpoints"
-  default     = null
-}
-
-variable "acr_diag_logs" {
-  description = "Application Gateway Monitoring Category details for Azure Diagnostic setting"
-  default     = ["ContainerRegistryRepositoryEvents", "ContainerRegistryLoginEvents"]
 }
 
 variable "private_dns_name" {
@@ -154,7 +158,7 @@ variable "private_dns_name" {
 }
 
 variable "subnet_id" {
-  type        = list(string)
+  type        = string
   default     = null
   description = "Subnet to be used for private endpoint"
 }
@@ -192,12 +196,6 @@ variable "admin_enabled" {
   type        = bool
   default     = true
   description = "To enable of disable admin access"
-}
-
-variable "enable_diagnostic" {
-  type        = bool
-  default     = true
-  description = "Flag to control diagnostic setting resource creation."
 }
 
 variable "existing_private_dns_zone_resource_group_name" {
@@ -255,4 +253,25 @@ variable "existing_private_dns_zone_id" {
   type        = list(any)
   default     = null
   description = "ID of existing private dns zone. To be used in dns configuration group in private endpoint."
+}
+
+##-----------------------------------------------------------------------------
+## To enable diagnostic setting
+##-----------------------------------------------------------------------------
+variable "enable_diagnostic" {
+  type        = bool
+  default     = true
+  description = "Flag to control diagnostic setting resource creation."
+}
+
+variable "metric_enabled" {
+  type        = bool
+  default     = true
+  description = "Is this Diagnostic Metric enabled? Defaults to True."
+}
+
+variable "log_enabled" {
+  type        = string
+  default     = true
+  description = " Is this Diagnostic Log enabled? Defaults to true."
 }

@@ -35,31 +35,105 @@ include:
 # How to use this project
 # yamllint disable rule:line-length
 usage: |-
-  ### Simple Example
+  ### Basic Example
   Here is an example of how you can use this module in your inventory structure:
   ```hcl
     module "container-registry" {
-        source               = "clouddrove/acr/azure"
-        resource_group_name  = module.resource_group.resource_group_name
-        location             = module.resource_group.resource_group_location
-        container_registry_config = {
-        name                          = "containerregistrydemoproject01"
-        admin_enabled                 = true
-        sku                           = "Premium"
-        public_network_access_enabled = false
-      }
-
-      retention_policy = {
-        days    = 10
-        enabled = true
-      }
-      enable_content_trust          = true
-      enable_private_endpoint       = true
-      virtual_network_name          = module.vnet.vnet_name
-      virtual_network_id            = join("", module.vnet.vnet_id)
-      subnet_id                     = module.name_specific_subnet.specific_subnet_id
-      private_subnet_address_prefix = module.name_specific_subnet.specific_subnet_address_prefixes
-      private_dns_name              = "privatelink.azurecr.io" # To be same for all ACR.
+    source              = "../../"
+    name                = local.name # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
+    environment         = local.environment
+    resource_group_name = module.resource_group.resource_group_name
+    location            = module.resource_group.resource_group_location
+    container_registry_config = {
+    name = "cdacr1234" # Name of Container Registry
+    sku  = "Premium"
+   }
+   ##----------------------------------------------------------------------------- 
+   ## To be mentioned for private endpoint, because private endpoint is enabled by default.
+   ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
+   ##-----------------------------------------------------------------------------
+   virtual_network_id = "vnet_id"
+   enable_diagnostic  = false
+   }
+  ```
+  
+  ### Complete Example
+  Here is an example of how you can use this module in your inventory structure:
+  ```hcl
+    module "container-registry" {
+    source              = "../../"
+    name                = local.name # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
+    environment         = local.environment
+    resource_group_name = module.resource_group.resource_group_name
+    location            = module.resource_group.resource_group_location
+    container_registry_config = {
+    name = "cdacr1234" # Name of Container Registry
+    sku  = "Premium"
     }
- 
-    ```
+    log_analytics_workspace_id = module.log-analytics.workspace_id
+    ##----------------------------------------------------------------------------- 
+    ## To be mentioned for private endpoint, because private endpoint is enabled by default.
+    ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
+    ##-----------------------------------------------------------------------------
+    virtual_network_id = module.vnet.vnet_id
+    subnet_id          = module.subnet.default_subnet_id[0]
+    }
+   ```
+
+  ### with_existing_dns_zone_in_diff_rg
+  Here is an example of how you can use this module in your inventory structure:
+  ```hcl
+    module "container-registry" {
+    source              = "../../"
+    name                = local.name # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
+    environment         = local.environment
+    resource_group_name = module.resource_group.resource_group_name
+    location            = module.resource_group.resource_group_location
+    container_registry_config = {
+    name = "cdacr1234" # Name of Container Registry
+    sku  = "Premium"
+    }
+    log_analytics_workspace_id = module.log-analytics.workspace_id
+    ##----------------------------------------------------------------------------- 
+    ## To be mentioned for private endpoint, because private endpoint is enabled by default.
+    ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
+    ##-----------------------------------------------------------------------------
+    virtual_network_id = module.vnet.vnet_id
+    subnet_id          = module.subnet.default_subnet_id[0]
+    ##----------------------------------------------------------------------------- 
+    ## Specify following variales when private dns zone is in same subscription but in different resource group
+    ##-----------------------------------------------------------------------------
+    existing_private_dns_zone                     = "privatelink.azurecr.io" # Name of private dns zone remain same for acr. 
+    existing_private_dns_zone_resource_group_name = "example_test_rg"
+    }
+   ```
+   
+  ### with_existing_dns_zone_in_diff_subs
+  Here is an example of how you can use this module in your inventory structure:
+  ```hcl
+    module "container-registry" {
+    ource              = "../../"
+    name                = local.name # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
+    environment         = local.environment
+    resource_group_name = module.resource_group.resource_group_name
+    location            = module.resource_group.resource_group_location
+    container_registry_config = {
+    name = "cdacr1234" # Name of Container Registry
+    sku  = "Premium"
+    }
+    log_analytics_workspace_id = module.log-analytics.workspace_id
+    ##----------------------------------------------------------------------------- 
+    ## To be mentioned for private endpoint, because private endpoint is enabled by default.
+    ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
+    ##-----------------------------------------------------------------------------
+    virtual_network_id = module.vnet.vnet_id
+    subnet_id          = module.subnet.default_subnet_id[0]
+    ##----------------------------------------------------------------------------- 
+    ## Specify following variales when private dns zone is in different subscription.
+    ##-----------------------------------------------------------------------------
+    diff_sub                                      = true
+    alias_sub                                     = "35XXXXXXXXXXXX67"       # Subcription id in which dns zone is present.
+    existing_private_dns_zone                     = "privatelink.azurecr.io" # Name of private dns zone remain same for acr. 
+    existing_private_dns_zone_resource_group_name = "example_test_rg"
+    }
+   ```
