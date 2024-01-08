@@ -41,7 +41,7 @@ module "vnet" {
 ##-----------------------------------------------------------------------------
 module "subnet" {
   source               = "clouddrove/subnet/azure"
-  version              = "1.0.2"
+  version              = "1.1.0"
   name                 = local.name
   environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
@@ -77,7 +77,7 @@ module "log-analytics" {
 
 module "vault" {
   source              = "clouddrove/key-vault/azure"
-  version             = "1.0.5"
+  version             = "1.1.0"
   name                = "appdvgcyus23654"
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
@@ -86,8 +86,8 @@ module "vault" {
   subnet_id           = module.subnet.default_subnet_id[0]
   ##RBAC
   enable_rbac_authorization = true
-  principal_id              = ["0f854e94-98ca-4258-9e9a-0c9752f7cf5e"]
-  role_definition_name      = ["Key Vault Administrator"]
+  reader_objects_ids        = [data.azurerm_client_config.current_client_config.object_id]
+  admin_objects_ids         = [data.azurerm_client_config.current_client_config.object_id]
   #### enable diagnostic setting
   diagnostic_setting_enable = false
   #log_analytics_workspace_id = module.log-analytics.workspace_id ## when diagnostic_setting_enable = true, need to add log analytics workspace id
