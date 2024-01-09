@@ -19,7 +19,7 @@ module "resource_group" {
   name        = local.name
   environment = local.environment
   label_order = ["name", "environment"]
-  location    = "East US"
+  location    = "Canada Central"
 }
 
 ##----------------------------------------------------------------------------- 
@@ -51,7 +51,7 @@ module "subnet" {
   virtual_network_name = module.vnet.vnet_name
   #subnet
   subnet_names    = ["subnet1"]
-  subnet_prefixes = ["10.0.0.0/20"]
+  subnet_prefixes = ["10.0.0.0/24"]
   # route_table
   routes = [
     {
@@ -80,12 +80,15 @@ module "log-analytics" {
 module "vault" {
   source              = "clouddrove/key-vault/azure"
   version             = "1.1.0"
-  name                = "appdvgcyus23654"
+  name                = "apptest2rs23473"
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   virtual_network_id  = module.vnet.vnet_id
   subnet_id           = module.subnet.default_subnet_id[0]
+
+  network_acls = null
+
   ##RBAC
   enable_rbac_authorization = true
   reader_objects_ids        = [data.azurerm_client_config.current_client_config.object_id]
@@ -116,6 +119,7 @@ module "container-registry" {
   virtual_network_id          = module.vnet.vnet_id
   subnet_id                   = module.subnet.default_subnet_id[0]
   encryption                  = true
+  enable_content_trust        = false
   key_vault_rbac_auth_enabled = true
   #expiration_date = 
   key_vault_id = module.vault.id

@@ -111,15 +111,6 @@ variable "identity_ids" {
   description = "Specifies a list of user managed identity ids to be assigned. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned`"
 }
 
-# variable "encryption" {
-#     type = object({
-#     key_vault_key_id   = string
-#     identity_client_id = string
-#   })
-#   default = null
-#   description = "Encrypt registry using a customer-managed key"
-# }
-
 variable "encryption" {
   type    = bool
   default = false
@@ -145,15 +136,16 @@ variable "container_registry_webhooks" {
   description = "Manages an Azure Container Registry Webhook"
 }
 
-variable "expiration_date" {
-  type        = number
-  default     = null
-  description = ""
-}
 variable "key_vault_id" {
   type        = string
   default     = null
   description = ""
+}
+
+variable "enable_rotation_policy" {
+  type        = bool
+  default     = false
+  description = "Whether to enable rotation policy or not"
 }
 
 variable "key_vault_rbac_auth_enabled" {

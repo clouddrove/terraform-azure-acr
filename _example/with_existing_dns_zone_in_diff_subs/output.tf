@@ -29,7 +29,7 @@ output "container_registry_private_endpoint" {
 }
 
 output "container_registry_private_dns_zone_domain" {
-  value       = var.existing_private_dns_zone == null && var.enable_private_endpoint ? azurerm_private_dns_zone.dnszone1[0].name : var.existing_private_dns_zone
+  value       = module.container-registry.container_registry_private_dns_zone_domain
   description = "DNS zone name of Azure Container Registry Private endpoints dns name records"
 }
 

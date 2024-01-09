@@ -78,7 +78,7 @@ resource "azurerm_container_registry" "main" {
 
   identity {
     type         = var.identity_ids != null || var.encryption ? "SystemAssigned, UserAssigned" : "SystemAssigned"
-    identity_ids = var.identity_ids
+    identity_ids = var.encryption ? [azurerm_user_assigned_identity.identity[0].id] : var.identity_ids
   }
 
   dynamic "encryption" {
@@ -126,6 +126,9 @@ resource "azurerm_container_registry_webhook" "main" {
   }
 }
 
+##----------------------------------------------------------------------------- 
+## Below resources will create Vault_key .   
+##-----------------------------------------------------------------------------
 resource "azurerm_key_vault_key" "kvkey" {
   depends_on = [azurerm_role_assignment.identity_assigned]
   count      = var.enable && var.encryption ? 1 : 0
@@ -142,28 +145,31 @@ resource "azurerm_key_vault_key" "kvkey" {
     "verify",
     "wrapKey",
   ]
-  rotation_policy {
-    automatic {
-      time_before_expiry = "P30D"
-    }
+  dynamic "rotation_policy" {
+    for_each = var.enable_rotation_policy ? [1] : []
+    content {
+      automatic {
+        time_before_expiry = "P30D"
+      }
 
-    expire_after         = "P90D"
-    notify_before_expiry = "P29D"
+      expire_after         = "P90D"
+      notify_before_expiry = "P29D"
+    }
   }
 }
 
 resource "azurerm_role_assignment" "identity_assigned" {
   depends_on           = [azurerm_user_assigned_identity.identity]
   count                = var.enable && var.encryption && var.key_vault_rbac_auth_enabled ? 1 : 0
-  principal_id         = join("", azurerm_user_assigned_identity.identity.*.principal_id)
+  principal_id         = azurerm_user_assigned_identity.identity[0].principal_id
   scope                = var.key_vault_id
   role_definition_name = "Key Vault Crypto Service Encryption User"
 }
 
 resource "azurerm_user_assigned_identity" "identity" {
-  count               = var.enable && var.encryption ? 1 : 0
+  count               = var.enable && var.encryption != null ? 1 : 0
   location            = var.location
-  name                = format("%s-acr-user_assigned-identity", module.labels.id)
+  name                = format("%s-acr-uid", module.labels.id)
   resource_group_name = var.resource_group_name
 }
 
