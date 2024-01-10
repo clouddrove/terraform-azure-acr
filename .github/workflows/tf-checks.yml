@@ -22,4 +22,5 @@ jobs:
 
   with_existing_dns_zone_in_diff_subs:
     uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.0.10
+    with:
       working_directory: './_example/with_existing_dns_zone_in_diff_subs/'

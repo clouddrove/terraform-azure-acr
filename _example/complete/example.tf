@@ -80,14 +80,20 @@ module "log-analytics" {
 module "vault" {
   source              = "clouddrove/key-vault/azure"
   version             = "1.1.0"
-  name                = "apptest2rs23473"
+  name                = "apptest4rs23474"
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
   virtual_network_id  = module.vnet.vnet_id
   subnet_id           = module.subnet.default_subnet_id[0]
 
-  network_acls = null
+  public_network_access_enabled = false
+
+  network_acls = {
+    bypass         = "AzureServices"
+    default_action = "Deny"
+    ip_rules       = ["0.0.0.0/0"]
+  }
 
   ##RBAC
   enable_rbac_authorization = true
@@ -121,7 +127,6 @@ module "container-registry" {
   encryption                  = true
   enable_content_trust        = false
   key_vault_rbac_auth_enabled = true
-  #expiration_date = 
-  key_vault_id = module.vault.id
+  key_vault_id                = module.vault.id
 
 }
