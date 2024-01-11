@@ -80,7 +80,7 @@ module "log-analytics" {
 module "vault" {
   source              = "clouddrove/key-vault/azure"
   version             = "1.1.0"
-  name                = "apptest4rs23474"
+  name                = "apptest4rds3474"
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
@@ -100,8 +100,8 @@ module "vault" {
   reader_objects_ids        = [data.azurerm_client_config.current_client_config.object_id]
   admin_objects_ids         = [data.azurerm_client_config.current_client_config.object_id]
   #### enable diagnostic setting
-  diagnostic_setting_enable = false
-  #log_analytics_workspace_id = module.log-analytics.workspace_id ## when diagnostic_setting_enable = true, need to add log analytics workspace id
+  diagnostic_setting_enable  = true
+  log_analytics_workspace_id = module.log-analytics.workspace_id ## when diagnostic_setting_enable = true, need to add log analytics workspace id
 }
 
 ##----------------------------------------------------------------------------- 
@@ -122,11 +122,11 @@ module "container-registry" {
   ## To be mentioned for private endpoint, because private endpoint is enabled by default.
   ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
   ##-----------------------------------------------------------------------------
-  virtual_network_id          = module.vnet.vnet_id
-  subnet_id                   = module.subnet.default_subnet_id[0]
+  virtual_network_id = module.vnet.vnet_id
+  subnet_id          = module.subnet.default_subnet_id[0]
+  ##if encryption is enabled.
   encryption                  = true
   enable_content_trust        = false
   key_vault_rbac_auth_enabled = true
   key_vault_id                = module.vault.id
-
 }

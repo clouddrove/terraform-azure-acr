@@ -177,11 +177,12 @@ resource "azurerm_user_assigned_identity" "identity" {
 ## Below resource will create private endpoint resource for ACR.    
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_endpoint" "pep1" {
-  count               = var.enable && var.enable_private_endpoint ? 1 : 0
-  name                = format("%s-%s-pe-acr", var.container_registry_config.name, module.labels.id)
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  subnet_id           = var.subnet_id
+  count                         = var.enable && var.enable_private_endpoint ? 1 : 0
+  name                          = format("%s-%s-acr-pe", var.container_registry_config.name, module.labels.id)
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  subnet_id                     = var.subnet_id
+  custom_network_interface_name = format("%s-%s-acr-pe-nic", var.container_registry_config.name, module.labels.id)
   private_dns_zone_group {
     name                 = format("%s-%s-acr", var.container_registry_config.name, "dns-zone-group")
     private_dns_zone_ids = var.existing_private_dns_zone == null ? [azurerm_private_dns_zone.dnszone1[0].id] : var.existing_private_dns_zone_id
