@@ -35,36 +35,45 @@ variable "enable" {
 }
 
 variable "resource_group_name" {
+  type        = string
+  default     = null
   description = "A container that holds related resources for an Azure solution"
-  default     = ""
+
 }
 
 variable "location" {
+  type        = string
+  default     = null
   description = "The location/region to keep all your network resources. To get the list of all locations with table format from azure cli, run 'az account list-locations -o table'"
-  default     = ""
 }
 
 variable "container_registry_config" {
-  description = "Manages an Azure Container Registry"
   type = object({
     name                      = string
     sku                       = optional(string)
     quarantine_policy_enabled = optional(bool)
     zone_redundancy_enabled   = optional(bool)
   })
+  description = "Manages an Azure Container Registry"
+}
+
+#azure_service_bypass
+variable "azure_services_bypass" {
+  type        = string
+  default     = "AzureServices"
+  description = "Whether to allow trusted Azure services to access a network restricted Container Registry? Possible values are None and AzureServices. Defaults to AzureServices"
 }
 
 variable "georeplications" {
-  description = "A list of Azure locations where the container registry should be geo-replicated"
   type = list(object({
     location                = string
     zone_redundancy_enabled = optional(bool)
   }))
-  default = []
+  default     = []
+  description = "A list of Azure locations where the container registry should be geo-replicated"
 }
 
-variable "network_rule_set" { # change this to match actual objects
-  description = "Manage network rules for Azure Container Registries"
+variable "network_rule_set" {
   type = object({
     default_action = optional(string)
     ip_rule = optional(list(object({
@@ -74,11 +83,11 @@ variable "network_rule_set" { # change this to match actual objects
       subnet_id = string
     })))
   })
-  default = null
+  default     = null
+  description = "Manage network rules for Azure Container Registries"
 }
 
 variable "retention_policy" {
-  description = "Set a retention policy for untagged manifests"
   type = object({
     days    = optional(number)
     enabled = optional(bool)
@@ -87,37 +96,35 @@ variable "retention_policy" {
     days    = 10
     enabled = true
   }
+  description = "Set a retention policy for untagged manifests"
 }
 
 variable "enable_content_trust" {
-  description = "Boolean value to enable or disable Content trust in Azure Container Registry"
+  type        = bool
   default     = true
+  description = "Boolean value to enable or disable Content trust in Azure Container Registry"
 }
 
 variable "identity_ids" {
-  description = "Specifies a list of user managed identity ids to be assigned. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned`"
+  type        = list(string)
   default     = null
+  description = "Specifies a list of user managed identity ids to be assigned. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned`"
 }
 
 variable "encryption" {
-  description = "Encrypt registry using a customer-managed key"
-  type = object({
-    key_vault_key_id   = string
-    identity_client_id = string
-  })
-  default = null
+  type    = bool
+  default = false
 }
 
 variable "scope_map" {
-  description = "Manages an Azure Container Registry scope map. Scope Maps are a preview feature only available in Premium SKU Container registries."
   type = map(object({
     actions = list(string)
   }))
-  default = null
+  default     = null
+  description = "Manages an Azure Container Registry scope map. Scope Maps are a preview feature only available in Premium SKU Container registries."
 }
 
 variable "container_registry_webhooks" {
-  description = "Manages an Azure Container Registry Webhook"
   type = map(object({
     service_uri    = string
     actions        = list(string)
@@ -125,27 +132,40 @@ variable "container_registry_webhooks" {
     scope          = string
     custom_headers = map(string)
   }))
-  default = null
+  default     = null
+  description = "Manages an Azure Container Registry Webhook"
 }
 
+variable "key_vault_id" {
+  type        = string
+  default     = null
+  description = ""
+}
+
+variable "enable_rotation_policy" {
+  type        = bool
+  default     = false
+  description = "Whether to enable rotation policy or not"
+}
+
+variable "key_vault_rbac_auth_enabled" {
+  type    = bool
+  default = true
+}
+
+##-----------------------------------------------------------------------------
+## Private endpoint
+##-----------------------------------------------------------------------------
 variable "enable_private_endpoint" {
-  description = "Manages a Private Endpoint to Azure Container Registry"
+  type        = bool
   default     = true
+  description = "Manages a Private Endpoint to Azure Container Registry"
 }
 
 variable "existing_private_dns_zone" {
+  type        = string
+  default     = null
   description = "Name of the existing private DNS zone"
-  default     = null
-}
-
-variable "private_subnet_address_prefix" {
-  description = "The name of the subnet for private endpoints"
-  default     = null
-}
-
-variable "acr_diag_logs" {
-  description = "Application Gateway Monitoring Category details for Azure Diagnostic setting"
-  default     = ["ContainerRegistryRepositoryEvents", "ContainerRegistryLoginEvents"]
 }
 
 variable "private_dns_name" {
@@ -154,7 +174,7 @@ variable "private_dns_name" {
 }
 
 variable "subnet_id" {
-  type        = list(string)
+  type        = string
   default     = null
   description = "Subnet to be used for private endpoint"
 }
@@ -172,8 +192,9 @@ variable "log_analytics_workspace_id" {
 }
 
 variable "storage_account_id" {
-  type    = string
-  default = null
+  type        = string
+  default     = null
+  description = "Storage account id to pass it to destination details of diagnostic_setting."
 }
 
 variable "private_dns_zone_vnet_link_registration_enabled" {
@@ -192,12 +213,6 @@ variable "admin_enabled" {
   type        = bool
   default     = true
   description = "To enable of disable admin access"
-}
-
-variable "enable_diagnostic" {
-  type        = bool
-  default     = true
-  description = "Flag to control diagnostic setting resource creation."
 }
 
 variable "existing_private_dns_zone_resource_group_name" {
@@ -255,4 +270,25 @@ variable "existing_private_dns_zone_id" {
   type        = list(any)
   default     = null
   description = "ID of existing private dns zone. To be used in dns configuration group in private endpoint."
+}
+
+##-----------------------------------------------------------------------------
+## To enable diagnostic setting
+##-----------------------------------------------------------------------------
+variable "enable_diagnostic" {
+  type        = bool
+  default     = true
+  description = "Flag to control diagnostic setting resource creation."
+}
+
+variable "metric_enabled" {
+  type        = bool
+  default     = true
+  description = "Is this Diagnostic Metric enabled? Defaults to True."
+}
+
+variable "log_enabled" {
+  type        = string
+  default     = true
+  description = " Is this Diagnostic Log enabled? Defaults to true."
 }

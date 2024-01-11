@@ -27,6 +27,7 @@ resource "azurerm_container_registry" "main" {
   quarantine_policy_enabled     = var.container_registry_config.quarantine_policy_enabled
   zone_redundancy_enabled       = var.container_registry_config.zone_redundancy_enabled
   tags                          = module.labels.tags
+  network_rule_bypass_option    = var.azure_services_bypass
 
   dynamic "georeplications" {
     for_each = var.georeplications
@@ -61,7 +62,7 @@ resource "azurerm_container_registry" "main" {
   }
 
   dynamic "retention_policy" {
-    for_each = var.retention_policy != null ? [var.retention_policy] : []
+    for_each = var.retention_policy != null && var.container_registry_config.sku == "Premium" ? [var.retention_policy] : []
     content {
       days    = lookup(retention_policy.value, "days", 7)
       enabled = lookup(retention_policy.value, "enabled", true)
@@ -76,35 +77,33 @@ resource "azurerm_container_registry" "main" {
   }
 
   identity {
-    type         = var.identity_ids != null ? "SystemAssigned, UserAssigned" : "SystemAssigned"
-    identity_ids = var.identity_ids
+    type         = var.identity_ids != null || var.encryption ? "SystemAssigned, UserAssigned" : "SystemAssigned"
+    identity_ids = var.encryption ? [azurerm_user_assigned_identity.identity[0].id] : var.identity_ids
   }
 
   dynamic "encryption" {
-    for_each = var.encryption != null ? [var.encryption] : []
+    for_each = var.encryption && var.container_registry_config.sku == "Premium" ? ["encryption"] : []
     content {
       enabled            = true
-      key_vault_key_id   = encryption.value.key_vault_key_id
-      identity_client_id = encryption.value.identity_client_id
+      key_vault_key_id   = azurerm_key_vault_key.kvkey[0].id
+      identity_client_id = azurerm_user_assigned_identity.identity[0].client_id
     }
   }
 }
-
 
 resource "azurerm_container_registry_scope_map" "main" {
   for_each                = var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
   name                    = format("%s", each.key)
   resource_group_name     = var.resource_group_name
-  container_registry_name = azurerm_container_registry.main.*.name
+  container_registry_name = azurerm_container_registry.main[0].name
   actions                 = each.value["actions"]
 }
-
 
 resource "azurerm_container_registry_token" "main" {
   for_each                = var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
   name                    = format("%s", "${each.key}-token")
   resource_group_name     = var.resource_group_name
-  container_registry_name = azurerm_container_registry.main.*.name
+  container_registry_name = azurerm_container_registry.main[0].name
   scope_map_id            = element([for k in azurerm_container_registry_scope_map.main : k.id], 0)
   enabled                 = true
 }
@@ -114,7 +113,7 @@ resource "azurerm_container_registry_webhook" "main" {
   name                = format("%s", each.key)
   resource_group_name = var.resource_group_name
   location            = var.location
-  registry_name       = azurerm_container_registry.main.*.name
+  registry_name       = azurerm_container_registry.main[0].name
   service_uri         = each.value["service_uri"]
   actions             = each.value["actions"]
   status              = each.value["status"]
@@ -128,14 +127,62 @@ resource "azurerm_container_registry_webhook" "main" {
 }
 
 ##----------------------------------------------------------------------------- 
+## Below resources will create Vault_key .   
+##-----------------------------------------------------------------------------
+resource "azurerm_key_vault_key" "kvkey" {
+  depends_on = [azurerm_role_assignment.identity_assigned]
+  count      = var.enable && var.encryption ? 1 : 0
+  name       = format("acr-%s-cmk-key", module.labels.id)
+  #expiration_date = var.expiration_date
+  key_vault_id = var.key_vault_id
+  key_type     = "RSA"
+  key_size     = 2048
+  key_opts = [
+    "decrypt",
+    "encrypt",
+    "sign",
+    "unwrapKey",
+    "verify",
+    "wrapKey",
+  ]
+  dynamic "rotation_policy" {
+    for_each = var.enable_rotation_policy ? [1] : []
+    content {
+      automatic {
+        time_before_expiry = "P30D"
+      }
+
+      expire_after         = "P90D"
+      notify_before_expiry = "P29D"
+    }
+  }
+}
+
+resource "azurerm_role_assignment" "identity_assigned" {
+  depends_on           = [azurerm_user_assigned_identity.identity]
+  count                = var.enable && var.encryption && var.key_vault_rbac_auth_enabled ? 1 : 0
+  principal_id         = azurerm_user_assigned_identity.identity[0].principal_id
+  scope                = var.key_vault_id
+  role_definition_name = "Key Vault Crypto Service Encryption User"
+}
+
+resource "azurerm_user_assigned_identity" "identity" {
+  count               = var.enable && var.encryption != null ? 1 : 0
+  location            = var.location
+  name                = format("%s-acr-uid", module.labels.id)
+  resource_group_name = var.resource_group_name
+}
+
+##----------------------------------------------------------------------------- 
 ## Below resource will create private endpoint resource for ACR.    
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_endpoint" "pep1" {
-  count               = var.enable && var.enable_private_endpoint ? 1 : 0
-  name                = format("%s-%s-pe-acr", var.container_registry_config.name, module.labels.id)
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  subnet_id           = join("", var.subnet_id)
+  count                         = var.enable && var.enable_private_endpoint ? 1 : 0
+  name                          = format("%s-%s-acr-pe", var.container_registry_config.name, module.labels.id)
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  subnet_id                     = var.subnet_id
+  custom_network_interface_name = format("%s-%s-acr-pe-nic", var.container_registry_config.name, module.labels.id)
   private_dns_zone_group {
     name                 = format("%s-%s-acr", var.container_registry_config.name, "dns-zone-group")
     private_dns_zone_ids = var.existing_private_dns_zone == null ? [azurerm_private_dns_zone.dnszone1[0].id] : var.existing_private_dns_zone_id
@@ -168,16 +215,7 @@ provider "azurerm" {
 ##-----------------------------------------------------------------------------
 locals {
   valid_rg_name         = var.existing_private_dns_zone == null ? var.resource_group_name : var.existing_private_dns_zone_resource_group_name
-  private_dns_zone_name = var.existing_private_dns_zone == null ? join("", azurerm_private_dns_zone.dnszone1.*.name) : var.existing_private_dns_zone
-}
-
-##----------------------------------------------------------------------------- 
-## Data block called to get private ip of private endpoint that will be used in creating dns a-record. 
-##-----------------------------------------------------------------------------
-data "azurerm_private_endpoint_connection" "private-ip" {
-  count               = var.enable && var.enable_private_endpoint ? 1 : 0
-  name                = join("", azurerm_private_endpoint.pep1.*.name)
-  resource_group_name = var.resource_group_name
+  private_dns_zone_name = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1[0].name : var.existing_private_dns_zone
 }
 
 ##----------------------------------------------------------------------------- 
@@ -240,7 +278,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
   count                 = var.enable && var.addon_vent_link ? 1 : 0
   name                  = format("%s-pdz-vnet-link-acr-addon", module.labels.id)
   resource_group_name   = var.addon_resource_group_name
-  private_dns_zone_name = var.existing_private_dns_zone == null ? join("", azurerm_private_dns_zone.dnszone1.*.name) : var.existing_private_dns_zone
+  private_dns_zone_name = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1[0].name : var.existing_private_dns_zone
   virtual_network_id    = var.addon_virtual_network_id
   tags                  = module.labels.tags
 }
@@ -255,29 +293,20 @@ resource "azurerm_monitor_diagnostic_setting" "acr-diag" {
   storage_account_id         = var.storage_account_id
   log_analytics_workspace_id = var.log_analytics_workspace_id
 
-  dynamic "log" {
-    for_each = var.acr_diag_logs
+  dynamic "enabled_log" {
+    for_each = var.log_enabled ? ["allLogs"] : []
     content {
-      category = log.value
+      category_group = enabled_log.value
+    }
+  }
+  dynamic "metric" {
+    for_each = var.metric_enabled ? ["AllMetrics"] : []
+    content {
+      category = metric.value
       enabled  = true
-
-      retention_policy {
-        enabled = false
-        days    = 0
-      }
     }
   }
-
-  metric {
-    category = "AllMetrics"
-
-    retention_policy {
-      enabled = false
-      days    = 0
-    }
-  }
-
   lifecycle {
-    ignore_changes = [log, metric]
+    ignore_changes = [enabled_log, metric]
   }
 }

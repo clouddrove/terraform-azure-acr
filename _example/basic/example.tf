@@ -1,3 +1,7 @@
+provider "azurerm" {
+  features {}
+}
+
 locals {
   name        = "app"
   environment = "test"
@@ -10,10 +14,10 @@ module "container-registry" {
   source              = "../../"
   name                = local.name # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
   environment         = local.environment
-  resource_group_name = module.resource_group.resource_group_name
-  location            = module.resource_group.resource_group_location
+  resource_group_name = "resource_group_name"
+  location            = "Central India"
   container_registry_config = {
-    name = "cdacr1234" # Name of Container Registry
+    name = "acr_name" # Name of Container Registry
     sku  = "Premium"
   }
   ##----------------------------------------------------------------------------- 

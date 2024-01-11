@@ -2,6 +2,8 @@ provider "azurerm" {
   features {}
 }
 
+data "azurerm_client_config" "current_client_config" {}
+
 locals {
   name        = "app"
   environment = "test"
@@ -17,7 +19,7 @@ module "resource_group" {
   name        = local.name
   environment = local.environment
   label_order = ["name", "environment"]
-  location    = "East US"
+  location    = "Canada Central"
 }
 
 ##----------------------------------------------------------------------------- 
@@ -27,12 +29,12 @@ module "resource_group" {
 module "vnet" {
   depends_on          = [module.resource_group]
   source              = "clouddrove/vnet/azure"
-  version             = "1.0.2"
+  version             = "1.0.4"
   name                = local.name
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
-  address_space       = "10.0.0.0/16"
+  address_spaces      = ["10.0.0.0/16"]
 }
 
 ##----------------------------------------------------------------------------- 
@@ -41,15 +43,15 @@ module "vnet" {
 ##-----------------------------------------------------------------------------
 module "subnet" {
   source               = "clouddrove/subnet/azure"
-  version              = "1.0.2"
+  version              = "1.1.0"
   name                 = local.name
   environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
   location             = module.resource_group.resource_group_location
-  virtual_network_name = join("", module.vnet.vnet_name)
+  virtual_network_name = module.vnet.vnet_name
   #subnet
   subnet_names    = ["subnet1"]
-  subnet_prefixes = ["10.0.0.0/20"]
+  subnet_prefixes = ["10.0.0.0/24"]
   # route_table
   routes = [
     {
@@ -75,6 +77,33 @@ module "log-analytics" {
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }
 
+module "vault" {
+  source              = "clouddrove/key-vault/azure"
+  version             = "1.1.0"
+  name                = "apptest4rds3474"
+  environment         = local.environment
+  resource_group_name = module.resource_group.resource_group_name
+  location            = module.resource_group.resource_group_location
+  virtual_network_id  = module.vnet.vnet_id
+  subnet_id           = module.subnet.default_subnet_id[0]
+
+  public_network_access_enabled = false
+
+  network_acls = {
+    bypass         = "AzureServices"
+    default_action = "Deny"
+    ip_rules       = ["0.0.0.0/0"]
+  }
+
+  ##RBAC
+  enable_rbac_authorization = true
+  reader_objects_ids        = [data.azurerm_client_config.current_client_config.object_id]
+  admin_objects_ids         = [data.azurerm_client_config.current_client_config.object_id]
+  #### enable diagnostic setting
+  diagnostic_setting_enable  = true
+  log_analytics_workspace_id = module.log-analytics.workspace_id ## when diagnostic_setting_enable = true, need to add log analytics workspace id
+}
+
 ##----------------------------------------------------------------------------- 
 ## ACR module call.
 ##-----------------------------------------------------------------------------
@@ -86,13 +115,18 @@ module "container-registry" {
   location            = module.resource_group.resource_group_location
   container_registry_config = {
     name = "cdacr1234" # Name of Container Registry
-    sku  = "Premium"
+    sku  = "Basic"
   }
-  log_analytics_workspace_id = "module.log-analytics.workspace_id"
+  log_analytics_workspace_id = module.log-analytics.workspace_id
   ##----------------------------------------------------------------------------- 
   ## To be mentioned for private endpoint, because private endpoint is enabled by default.
   ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
   ##-----------------------------------------------------------------------------
-  virtual_network_id = join("", module.vnet.vnet_id)
-  subnet_id          = module.subnet.default_subnet_id
+  virtual_network_id = module.vnet.vnet_id
+  subnet_id          = module.subnet.default_subnet_id[0]
+  ##if encryption is enabled.
+  encryption                  = true
+  enable_content_trust        = false
+  key_vault_rbac_auth_enabled = true
+  key_vault_id                = module.vault.id
 }
