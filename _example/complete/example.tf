@@ -115,7 +115,7 @@ module "container-registry" {
   location            = module.resource_group.resource_group_location
   container_registry_config = {
     name = "cdacr1234" # Name of Container Registry
-    sku  = "Premium"
+    sku  = "Basic"
   }
   log_analytics_workspace_id = module.log-analytics.workspace_id
   ##----------------------------------------------------------------------------- 

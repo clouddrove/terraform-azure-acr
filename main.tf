@@ -62,7 +62,7 @@ resource "azurerm_container_registry" "main" {
   }
 
   dynamic "retention_policy" {
-    for_each = var.retention_policy != null ? [var.retention_policy] : []
+    for_each = var.retention_policy != null && var.container_registry_config.sku == "Premium" ? [var.retention_policy] : []
     content {
       days    = lookup(retention_policy.value, "days", 7)
       enabled = lookup(retention_policy.value, "enabled", true)
@@ -82,7 +82,7 @@ resource "azurerm_container_registry" "main" {
   }
 
   dynamic "encryption" {
-    for_each = var.encryption ? ["encryption"] : []
+    for_each = var.encryption && var.container_registry_config.sku == "Premium" ? ["encryption"] : []
     content {
       enabled            = true
       key_vault_key_id   = azurerm_key_vault_key.kvkey[0].id
