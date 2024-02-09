@@ -169,7 +169,7 @@ resource "azurerm_role_assignment" "identity_assigned" {
 resource "azurerm_user_assigned_identity" "identity" {
   count               = var.enable && var.encryption != null ? 1 : 0
   location            = var.location
-  name                = format("%s-acr-uid", module.labels.id)
+  name                = format("%s-acr-mid", module.labels.id)
   resource_group_name = var.resource_group_name
 }
 
