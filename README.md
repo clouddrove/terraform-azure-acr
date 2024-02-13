@@ -199,7 +199,7 @@ Here is an example of how you can use this module in your inventory structure:
 | identity\_ids | Specifies a list of user managed identity ids to be assigned. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned` | `list(string)` | `null` | no |
 | key\_vault\_id | n/a | `string` | `null` | no |
 | key\_vault\_rbac\_auth\_enabled | n/a | `bool` | `true` | no |
-| label\_order | Label order, e.g. sequence of application name and environment `name`,`environment`,'attribute' [`webserver`,`qa`,`devops`,`public`,] . | `list(any)` | `[]` | no |
+| label\_order | Label order, e.g. sequence of application name and environment `name`,`environment`,'attribute' [`webserver`,`qa`,`devops`,`public`,] . | `list(any)` | <pre>[<br>  "name",<br>  "environment"<br>]</pre> | no |
 | location | The location/region to keep all your network resources. To get the list of all locations with table format from azure cli, run 'az account list-locations -o table' | `string` | `null` | no |
 | log\_analytics\_workspace\_id | log\_analytics\_workspace\_id | `string` | `null` | no |
 | log\_enabled | Is this Diagnostic Log enabled? Defaults to true. | `string` | `true` | no |
