@@ -92,7 +92,7 @@ resource "azurerm_container_registry" "main" {
 }
 
 resource "azurerm_container_registry_scope_map" "main" {
-  for_each                = var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
+  for_each                = var.enable && var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
   name                    = format("%s", each.key)
   resource_group_name     = var.resource_group_name
   container_registry_name = azurerm_container_registry.main[0].name
@@ -100,7 +100,7 @@ resource "azurerm_container_registry_scope_map" "main" {
 }
 
 resource "azurerm_container_registry_token" "main" {
-  for_each                = var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
+  for_each                = var.enable && var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
   name                    = format("%s", "${each.key}-token")
   resource_group_name     = var.resource_group_name
   container_registry_name = azurerm_container_registry.main[0].name
@@ -109,7 +109,7 @@ resource "azurerm_container_registry_token" "main" {
 }
 
 resource "azurerm_container_registry_webhook" "main" {
-  for_each            = var.container_registry_webhooks != null ? { for k, v in var.container_registry_webhooks : k => v if v != null } : {}
+  for_each            = var.enable && var.container_registry_webhooks != null ? { for k, v in var.container_registry_webhooks : k => v if v != null } : {}
   name                = format("%s", each.key)
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -132,7 +132,7 @@ resource "azurerm_container_registry_webhook" "main" {
 resource "azurerm_key_vault_key" "kvkey" {
   depends_on = [azurerm_role_assignment.identity_assigned]
   count      = var.enable && var.encryption ? 1 : 0
-  name       = format("acr-%s-cmk-key", module.labels.id)
+  name       = format("%s-acr-cmk-key", module.labels.id)
   #expiration_date = var.expiration_date
   key_vault_id = var.key_vault_id
   key_type     = "RSA"
@@ -169,7 +169,7 @@ resource "azurerm_role_assignment" "identity_assigned" {
 resource "azurerm_user_assigned_identity" "identity" {
   count               = var.enable && var.encryption != null ? 1 : 0
   location            = var.location
-  name                = format("%s-acr-uid", module.labels.id)
+  name                = format("%s-acr-mid", module.labels.id)
   resource_group_name = var.resource_group_name
 }
 
@@ -178,17 +178,17 @@ resource "azurerm_user_assigned_identity" "identity" {
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_endpoint" "pep1" {
   count                         = var.enable && var.enable_private_endpoint ? 1 : 0
-  name                          = format("%s-%s-acr-pe", var.container_registry_config.name, module.labels.id)
+  name                          = format("%s-acr-pe", module.labels.id)
   location                      = var.location
   resource_group_name           = var.resource_group_name
   subnet_id                     = var.subnet_id
-  custom_network_interface_name = format("%s-%s-acr-pe-nic", var.container_registry_config.name, module.labels.id)
+  custom_network_interface_name = format("%s-acr-pe-nic", module.labels.id)
   private_dns_zone_group {
-    name                 = format("%s-%s-acr", var.container_registry_config.name, "dns-zone-group")
+    name                 = format("%s-acr-dns-zone-group", module.labels.id)
     private_dns_zone_ids = var.existing_private_dns_zone == null ? [azurerm_private_dns_zone.dnszone1[0].id] : var.existing_private_dns_zone_id
   }
   private_service_connection {
-    name                           = format("%s-%s-acr", var.container_registry_config.name, "private-link")
+    name                           = format("%s-acr-psc", module.labels.id)
     is_manual_connection           = false
     private_connection_resource_id = azurerm_container_registry.main[0].id
     subresource_names              = ["registry"]
@@ -214,8 +214,8 @@ provider "azurerm" {
 ## Locals defined to determine the resource group in which private dns zone must be created or existing private dns zone is present. 
 ##-----------------------------------------------------------------------------
 locals {
-  valid_rg_name         = var.existing_private_dns_zone == null ? var.resource_group_name : var.existing_private_dns_zone_resource_group_name
-  private_dns_zone_name = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1[0].name : var.existing_private_dns_zone
+  valid_rg_name         = var.enable_private_endpoint ? var.existing_private_dns_zone == null ? var.resource_group_name : var.existing_private_dns_zone_resource_group_name : null
+  private_dns_zone_name = var.enable_private_endpoint ? var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1[0].name : var.existing_private_dns_zone : null
 }
 
 ##----------------------------------------------------------------------------- 
@@ -235,7 +235,7 @@ resource "azurerm_private_dns_zone" "dnszone1" {
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-same-sub" {
   count                 = var.enable && var.enable_private_endpoint && var.diff_sub == false && var.same_vnet == false ? 1 : 0
-  name                  = var.existing_private_dns_zone == null ? format("%s-pdz-vnet-link-acr", module.labels.id) : format("%s-pdz-vnet-link-acr-1", module.labels.id)
+  name                  = var.existing_private_dns_zone == null ? format("%s-acr-pdz-vnet-link", module.labels.id) : format("%s-acr-pdz-vnet-link-1")
   resource_group_name   = local.valid_rg_name
   private_dns_zone_name = local.private_dns_zone_name
   virtual_network_id    = var.virtual_network_id
@@ -250,7 +250,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-same-sub" {
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-diff_sub" {
   provider              = azurerm.peer
   count                 = var.enable && var.enable_private_endpoint && var.diff_sub == true ? 1 : 0
-  name                  = var.existing_private_dns_zone == null ? format("%s-pdz-vnet-link-acr", module.labels.id) : format("%s-pdz-vnet-link-acr-1", module.labels.id)
+  name                  = var.existing_private_dns_zone == null ? format("%s-acr-pdz-vnet-link", module.labels.id) : format("%s-acr-pdz-vnet-link-diif-dns", module.labels.id)
   resource_group_name   = local.valid_rg_name
   private_dns_zone_name = local.private_dns_zone_name
   virtual_network_id    = var.virtual_network_id
@@ -263,8 +263,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-diff_sub" {
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-multi-subs" {
   provider              = azurerm.peer
-  count                 = var.multi_sub_vnet_link && var.existing_private_dns_zone != null ? 1 : 0
-  name                  = format("%s-pdz-vnet-link-acr-1", module.labels.id)
+  count                 = var.enable && var.multi_sub_vnet_link && var.existing_private_dns_zone != null ? 1 : 0
+  name                  = format("%s-acr-pdz-vnet-link", module.labels.id)
   resource_group_name   = var.existing_private_dns_zone_resource_group_name
   private_dns_zone_name = var.existing_private_dns_zone
   virtual_network_id    = var.virtual_network_id
@@ -276,7 +276,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-multi-subs" 
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
   count                 = var.enable && var.addon_vent_link ? 1 : 0
-  name                  = format("%s-pdz-vnet-link-acr-addon", module.labels.id)
+  name                  = format("%s-acr-pdz-vnet-link-addon", module.labels.id)
   resource_group_name   = var.addon_resource_group_name
   private_dns_zone_name = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1[0].name : var.existing_private_dns_zone
   virtual_network_id    = var.addon_virtual_network_id
@@ -288,7 +288,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
 ##-----------------------------------------------------------------------------
 resource "azurerm_monitor_diagnostic_setting" "acr-diag" {
   count                      = var.enable && var.enable_diagnostic ? 1 : 0
-  name                       = lower("acr-${var.container_registry_config.name}-diag")
+  name                       = format("%s-acr-nic-diag-log", module.labels.id)
   target_resource_id         = azurerm_container_registry.main[0].id
   storage_account_id         = var.storage_account_id
   log_analytics_workspace_id = var.log_analytics_workspace_id
