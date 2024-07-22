@@ -42,7 +42,7 @@ module "vnet" {
 ##-----------------------------------------------------------------------------
 module "subnet" {
   source               = "clouddrove/subnet/azure"
-  version              = "1.1.0"
+  version              = "1.2.0"
   name                 = local.name
   environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
