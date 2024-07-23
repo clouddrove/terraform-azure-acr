@@ -54,7 +54,7 @@ output "container_registry_private_dns_zone_domain" {
   description = "DNS zone name of Azure Container Registry Private endpoints dns name records"
 }
 
-output "private_dns_zone_id" {
-  value       = var.enable_private_endpoint ? azurerm_private_dns_zone.dnszone1[0].id : null
-  description = "ID of private dns zone. To be used when there is existing dns zone and id is to be passed in private endpoint dns configuration group."
-}
+# output "private_dns_zone_id" {
+#   value       = var.enable_private_endpoint ? azurerm_private_dns_zone.dnszone1[0].id : null
+#   description = "ID of private dns zone. To be used when there is existing dns zone and id is to be passed in private endpoint dns configuration group."
+# }
