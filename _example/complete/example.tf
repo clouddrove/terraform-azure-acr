@@ -158,7 +158,7 @@ module "container-registry" {
   #existing_private_dns_zone                     = "privatelink.azurecr.io"
   #existing_private_dns_zone_resource_group_name = "dns-rg"
   #existing_private_dns_zone_id                  = [data.azurerm_private_dns_zone.existing_dns_zone.id]
-  
+
   ##if encryption is enabled.
   encryption                  = true
   enable_content_trust        = false
