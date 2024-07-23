@@ -97,6 +97,10 @@ data "azurerm_private_dns_zone" "existing_dns_zone" {
 ## ACR module call.
 ##-----------------------------------------------------------------------------
 module "container-registry" {
+  providers = {
+    azurerm.dns_sub  = azurerm.peer,
+    azurerm.main_sub = azurerm
+  }
   source              = "../../"
   name                = local.name # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
   environment         = local.environment
