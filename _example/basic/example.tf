@@ -1,5 +1,14 @@
 provider "azurerm" {
   features {}
+  subscription_id            = "01111111111110-11-11-11-11"
+  skip_provider_registration = "true"
+}
+
+provider "azurerm" {
+  features {}
+  alias                      = "peer"
+  subscription_id            = "01111111111110-11-11-11-11"
+  skip_provider_registration = "true"
 }
 
 locals {
@@ -11,6 +20,10 @@ locals {
 ## ACR module call.
 ##-----------------------------------------------------------------------------
 module "container-registry" {
+  providers = {
+    azurerm.dns_sub  = azurerm.peer,
+    azurerm.main_sub = azurerm
+  }
   source              = "../../"
   name                = local.name # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
   environment         = local.environment
