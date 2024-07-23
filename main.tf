@@ -246,7 +246,7 @@ resource "azurerm_private_dns_zone" "dnszone1" {
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-same-sub" {
   provider              = azurerm.main_sub
   count                 = var.enable && var.enable_private_endpoint && var.diff_sub == false && var.same_vnet == false ? 1 : 0
-  name                  = var.existing_private_dns_zone == null ? format("%s-acr-pdz-vnet-link", module.labels.id) : format("%s-acr-pdz-vnet-link-1")
+  name                  = var.existing_private_dns_zone == null ? format("%s-acr-pdz-vnet-link", module.labels.id) : format("%s-acr-pdz-vnet-link-1", module.labels.id)
   resource_group_name   = local.valid_rg_name
   private_dns_zone_name = local.private_dns_zone_name
   virtual_network_id    = var.virtual_network_id
