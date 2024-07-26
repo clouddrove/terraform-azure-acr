@@ -152,7 +152,7 @@ module "container-registry" {
 
   # diff_sub = true
   # alias                                         = ""
-  # alias_sub                                     = ""
+
 
   #########Following to be uncommmented when using DNS zone from different resource group or different subscription.
   #existing_private_dns_zone                     = "privatelink.azurecr.io"
