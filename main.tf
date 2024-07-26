@@ -17,6 +17,7 @@ module "labels" {
 ## Below resources will create ACR and its components.   
 ##-----------------------------------------------------------------------------
 resource "azurerm_container_registry" "main" {
+  provider                      = azurerm.main_sub
   count                         = var.enable ? 1 : 0
   name                          = format("%s", var.container_registry_config.name)
   resource_group_name           = var.resource_group_name
@@ -92,6 +93,7 @@ resource "azurerm_container_registry" "main" {
 }
 
 resource "azurerm_container_registry_scope_map" "main" {
+  provider                = azurerm.main_sub
   for_each                = var.enable && var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
   name                    = format("%s", each.key)
   resource_group_name     = var.resource_group_name
@@ -100,6 +102,7 @@ resource "azurerm_container_registry_scope_map" "main" {
 }
 
 resource "azurerm_container_registry_token" "main" {
+  provider                = azurerm.main_sub
   for_each                = var.enable && var.scope_map != null ? { for k, v in var.scope_map : k => v if v != null } : {}
   name                    = format("%s", "${each.key}-token")
   resource_group_name     = var.resource_group_name
@@ -109,6 +112,7 @@ resource "azurerm_container_registry_token" "main" {
 }
 
 resource "azurerm_container_registry_webhook" "main" {
+  provider            = azurerm.main_sub
   for_each            = var.enable && var.container_registry_webhooks != null ? { for k, v in var.container_registry_webhooks : k => v if v != null } : {}
   name                = format("%s", each.key)
   resource_group_name = var.resource_group_name
@@ -130,6 +134,7 @@ resource "azurerm_container_registry_webhook" "main" {
 ## Below resources will create Vault_key .   
 ##-----------------------------------------------------------------------------
 resource "azurerm_key_vault_key" "kvkey" {
+  provider   = azurerm.main_sub
   depends_on = [azurerm_role_assignment.identity_assigned]
   count      = var.enable && var.encryption ? 1 : 0
   name       = format("%s-acr-cmk-key", module.labels.id)
@@ -159,6 +164,7 @@ resource "azurerm_key_vault_key" "kvkey" {
 }
 
 resource "azurerm_role_assignment" "identity_assigned" {
+  provider             = azurerm.main_sub
   depends_on           = [azurerm_user_assigned_identity.identity]
   count                = var.enable && var.encryption && var.key_vault_rbac_auth_enabled ? 1 : 0
   principal_id         = azurerm_user_assigned_identity.identity[0].principal_id
@@ -167,16 +173,19 @@ resource "azurerm_role_assignment" "identity_assigned" {
 }
 
 resource "azurerm_user_assigned_identity" "identity" {
+  provider            = azurerm.main_sub
   count               = var.enable && var.encryption != null ? 1 : 0
   location            = var.location
   name                = format("%s-acr-mid", module.labels.id)
   resource_group_name = var.resource_group_name
 }
 
+
 ##----------------------------------------------------------------------------- 
 ## Below resource will create private endpoint resource for ACR.    
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_endpoint" "pep1" {
+  provider                      = azurerm.main_sub
   count                         = var.enable && var.enable_private_endpoint ? 1 : 0
   name                          = format("%s-acr-pe", module.labels.id)
   location                      = var.location
@@ -222,6 +231,7 @@ locals {
 ## Private dns zone will be created if private endpoint is enabled and no existing dns zone is provided.  
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone" "dnszone1" {
+  provider            = azurerm.main_sub
   count               = var.enable && var.existing_private_dns_zone == null && var.enable_private_endpoint ? 1 : 0
   name                = var.private_dns_name
   resource_group_name = var.resource_group_name
@@ -234,8 +244,9 @@ resource "azurerm_private_dns_zone" "dnszone1" {
 ## Resource group and private dns zone in which vnet link is to be created will be decided from condition present in locals and will be passed as locals. 
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-same-sub" {
+  provider              = azurerm.main_sub
   count                 = var.enable && var.enable_private_endpoint && var.diff_sub == false && var.same_vnet == false ? 1 : 0
-  name                  = var.existing_private_dns_zone == null ? format("%s-acr-pdz-vnet-link", module.labels.id) : format("%s-acr-pdz-vnet-link-1")
+  name                  = var.existing_private_dns_zone == null ? format("%s-acr-pdz-vnet-link", module.labels.id) : format("%s-acr-pdz-vnet-link-1", module.labels.id)
   resource_group_name   = local.valid_rg_name
   private_dns_zone_name = local.private_dns_zone_name
   virtual_network_id    = var.virtual_network_id
@@ -248,7 +259,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-same-sub" {
 ## Add different subscription id in alias sub variable to use provider for that particular subscription. 
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-diff_sub" {
-  provider              = azurerm.peer
+  provider              = azurerm.dns_sub
   count                 = var.enable && var.enable_private_endpoint && var.diff_sub == true ? 1 : 0
   name                  = var.existing_private_dns_zone == null ? format("%s-acr-pdz-vnet-link", module.labels.id) : format("%s-acr-pdz-vnet-link-diif-dns", module.labels.id)
   resource_group_name   = local.valid_rg_name
@@ -262,7 +273,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-diff_sub" {
 ## Call the module again and set enable variable = false and add variables specific only to this resource.   
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-multi-subs" {
-  provider              = azurerm.peer
+  provider              = azurerm.dns_sub
   count                 = var.enable && var.multi_sub_vnet_link && var.existing_private_dns_zone != null ? 1 : 0
   name                  = format("%s-acr-pdz-vnet-link", module.labels.id)
   resource_group_name   = var.existing_private_dns_zone_resource_group_name
@@ -275,6 +286,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-multi-subs" 
 ## Below vnet link resource will be created when you have to add extra vnet link in same subscription. 
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
+  provider              = azurerm.main_sub
   count                 = var.enable && var.addon_vent_link ? 1 : 0
   name                  = format("%s-acr-pdz-vnet-link-addon", module.labels.id)
   resource_group_name   = var.addon_resource_group_name
@@ -287,6 +299,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
 ## Below resource will create diagnostic setting for ACR.   
 ##-----------------------------------------------------------------------------
 resource "azurerm_monitor_diagnostic_setting" "acr-diag" {
+  provider                   = azurerm.main_sub
   count                      = var.enable && var.enable_diagnostic ? 1 : 0
   name                       = format("%s-acr-nic-diag-log", module.labels.id)
   target_resource_id         = azurerm_container_registry.main[0].id
