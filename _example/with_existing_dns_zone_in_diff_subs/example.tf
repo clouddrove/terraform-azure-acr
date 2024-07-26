@@ -121,7 +121,6 @@ module "container-registry" {
   ## Specify following variales when private dns zone is in different subscription.
   ##-----------------------------------------------------------------------------
   diff_sub                                      = true
-  alias_sub                                     = "35XXXXXXXXXXXX67"       # Subcription id in which dns zone is present.
   existing_private_dns_zone                     = "privatelink.azurecr.io" # Name of private dns zone remain same for acr. 
   existing_private_dns_zone_resource_group_name = "example_test_rg"
   existing_private_dns_zone_id                  = [data.azurerm_private_dns_zone.existing_dns_zone.id]
