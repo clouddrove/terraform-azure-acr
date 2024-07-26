@@ -221,12 +221,6 @@ variable "existing_private_dns_zone_resource_group_name" {
   description = "The name of the existing resource group"
 }
 
-variable "alias_sub" {
-  type        = string
-  default     = null
-  description = "Subscription id for different sub in which dns zone is present."
-}
-
 ##----------------------------------------------------------------------------- 
 ## To be set when existing dns zone is in diffrent subscription.
 ##-----------------------------------------------------------------------------
