@@ -210,16 +210,6 @@ resource "azurerm_private_endpoint" "pep1" {
 }
 
 ##----------------------------------------------------------------------------- 
-## Provider block added, to be used when private dns zone is in different subscription and vnet link is to be created in that private dns zone name. 
-## Add different subscription id in 'alias_sub' variable. 
-##-----------------------------------------------------------------------------
-provider "azurerm" {
-  alias = "peer"
-  features {}
-  subscription_id = var.alias_sub
-}
-
-##----------------------------------------------------------------------------- 
 ## Locals defined to determine the resource group in which private dns zone must be created or existing private dns zone is present. 
 ##-----------------------------------------------------------------------------
 locals {
