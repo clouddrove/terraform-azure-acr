@@ -1,7 +1,15 @@
 provider "azurerm" {
   features {}
+  subscription_id            = "01111111111110-11-11-11-11"
+  skip_provider_registration = "true"
 }
 
+provider "azurerm" {
+  features {}
+  alias                      = "peer"
+  subscription_id            = "01111111111110-11-11-11-11"
+  skip_provider_registration = "true"
+}
 locals {
   name        = "app"
   environment = "test"
@@ -42,7 +50,7 @@ module "vnet" {
 ##-----------------------------------------------------------------------------
 module "subnet" {
   source               = "clouddrove/subnet/azure"
-  version              = "1.1.0"
+  version              = "1.2.0"
   name                 = local.name
   environment          = local.environment
   resource_group_name  = module.resource_group.resource_group_name
@@ -76,10 +84,23 @@ module "log-analytics" {
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }
 
+##----------------------------------------------------------------------------
+## Existing DNS zone
+#-----------------------------------------------------------------------------
+data "azurerm_private_dns_zone" "existing_dns_zone" {
+  name                = "privatelink.azurecr.io" # The name of your DNS Zone
+  resource_group_name = "dns-rg"                 # The resource group where existing the DNS Zone is located
+}
+
+
 ##----------------------------------------------------------------------------- 
 ## ACR module call.
 ##-----------------------------------------------------------------------------
 module "container-registry" {
+  providers = {
+    azurerm.dns_sub  = azurerm.peer,
+    azurerm.main_sub = azurerm
+  }
   source              = "../../"
   name                = local.name # Name used for specifying tags and other resources naming.(like private endpoint, vnet-link etc)
   environment         = local.environment
@@ -100,7 +121,7 @@ module "container-registry" {
   ## Specify following variales when private dns zone is in different subscription.
   ##-----------------------------------------------------------------------------
   diff_sub                                      = true
-  alias_sub                                     = "35XXXXXXXXXXXX67"       # Subcription id in which dns zone is present.
   existing_private_dns_zone                     = "privatelink.azurecr.io" # Name of private dns zone remain same for acr. 
   existing_private_dns_zone_resource_group_name = "example_test_rg"
+  existing_private_dns_zone_id                  = [data.azurerm_private_dns_zone.existing_dns_zone.id]
 }
