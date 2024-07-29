@@ -6,7 +6,6 @@
 | addon\_vent\_link | The name of the addon vnet | `bool` | `false` | no |
 | addon\_virtual\_network\_id | The name of the addon vnet link vnet id | `string` | `""` | no |
 | admin\_enabled | To enable of disable admin access | `bool` | `true` | no |
-| alias\_sub | Subscription id for different sub in which dns zone is present. | `string` | `null` | no |
 | azure\_services\_bypass | Whether to allow trusted Azure services to access a network restricted Container Registry? Possible values are None and AzureServices. Defaults to AzureServices | `string` | `"AzureServices"` | no |
 | container\_registry\_config | Manages an Azure Container Registry | <pre>object({<br>    name                      = string<br>    sku                       = optional(string)<br>    quarantine_policy_enabled = optional(bool)<br>    zone_redundancy_enabled   = optional(bool)<br>  })</pre> | n/a | yes |
 | container\_registry\_webhooks | Manages an Azure Container Registry Webhook | <pre>map(object({<br>    service_uri    = string<br>    actions        = list(string)<br>    status         = optional(string)<br>    scope          = string<br>    custom_headers = map(string)<br>  }))</pre> | `null` | no |
@@ -61,5 +60,4 @@
 | container\_registry\_scope\_map\_id | The ID of the Container Registry scope map |
 | container\_registry\_token\_id | The ID of the Container Registry token |
 | container\_registry\_webhook\_id | The ID of the Container Registry Webhook |
-| private\_dns\_zone\_id | ID of private dns zone. To be used when there is existing dns zone and id is to be passed in private endpoint dns configuration group. |
 
