@@ -97,6 +97,10 @@ module "log-analytics" {
 
 module "vault" {
   source              = "clouddrove/key-vault/azure"
+  providers = {
+    azurerm.dns_sub  = azurerm.peer,
+    azurerm.main_sub = azurerm
+  }
   version             = "1.2.0"
   name                = "apptest4rds3477"
   environment         = local.environment
