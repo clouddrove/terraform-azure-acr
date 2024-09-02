@@ -11,6 +11,15 @@ provider "azurerm" {
   skip_provider_registration = "true"
 }
 
+provider "azurerm" {
+  features {}
+  alias = "main_sub"
+}
+
+provider "azurerm" {
+  features {}
+  alias = "dns_sub"
+}
 
 data "azurerm_client_config" "current_client_config" {}
 
