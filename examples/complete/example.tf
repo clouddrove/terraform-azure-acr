@@ -96,8 +96,9 @@ module "log-analytics" {
 
 
 module "vault" {
-  source              = "clouddrove/key-vault/azure"
+  source = "clouddrove/key-vault/azure"
   providers = {
+
     azurerm.dns_sub  = azurerm.peer, #change this to other alias if dns hosted in other subscription.
     azurerm.main_sub = azurerm
   }
