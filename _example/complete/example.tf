@@ -11,15 +11,7 @@ provider "azurerm" {
   skip_provider_registration = "true"
 }
 
-provider "azurerm" {
-  features {}
-  alias = "main_sub"
-}
 
-provider "azurerm" {
-  features {}
-  alias = "dns_sub"
-}
 
 data "azurerm_client_config" "current_client_config" {}
 
@@ -105,6 +97,10 @@ module "log-analytics" {
 
 
 module "vault" {
+  providers = {
+    azurerm.dns_sub  = azurerm.peer,
+    azurerm.main_sub = azurerm
+  }
   source              = "clouddrove/key-vault/azure"
   version             = "1.2.0"
   name                = "apptest4rds3477"
