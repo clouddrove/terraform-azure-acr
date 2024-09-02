@@ -8,19 +8,19 @@ jobs:
   basic-example:
     uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.7
     with:
-      working_directory: './_example/basic/'
+      working_directory: './examples/basic/'
 
   complete-example:
     uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.7
     with:
-      working_directory: './_example/complete/'
+      working_directory: './examples/complete/'
 
   with_existing_dns_zone_in_diff_rg:
     uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.7
     with:
-      working_directory: './_example/with_existing_dns_zone_in_diff_rg/'
+      working_directory: './examples/with_existing_dns_zone_in_diff_rg/'
 
   with_existing_dns_zone_in_diff_subs:
     uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.7
     with:
-      working_directory: './_example/with_existing_dns_zone_in_diff_subs/'
+      working_directory: './examples/with_existing_dns_zone_in_diff_subs/'
