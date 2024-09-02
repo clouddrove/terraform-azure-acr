@@ -97,7 +97,7 @@ module "log-analytics" {
 
 module "vault" {
   source              = "clouddrove/key-vault/azure"
-  version             = "1.1.0"
+  version             = "1.2.0"
   name                = "apptest4rds3477"
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
