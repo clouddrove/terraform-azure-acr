@@ -75,7 +75,7 @@ module "subnet" {
 ##-----------------------------------------------------------------------------
 module "log-analytics" {
   source                           = "clouddrove/log-analytics/azure"
-  version                          = "1.0.1"
+  version                          = "1.1.0"
   name                             = local.name
   environment                      = local.environment
   create_log_analytics_workspace   = true
