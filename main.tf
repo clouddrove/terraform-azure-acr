@@ -61,7 +61,7 @@ resource "azurerm_container_registry" "main" {
   #     enabled = var.enable_content_trust
   #   }
   # }
-  trust_policy_enabled = var.container_registry_config.sku == "Premium" ? var.enable_content_trust : false
+  trust_policy_enabled     = var.container_registry_config.sku == "Premium" ? var.enable_content_trust : false
   retention_policy_in_days = var.retention_policy != null && var.container_registry_config.sku == "Premium" ? var.retention_policy : null
 
   identity {

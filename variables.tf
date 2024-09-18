@@ -89,8 +89,8 @@ variable "network_rule_set" {
 
 
 variable "retention_policy" {
-type = number
-default = 5
+  type        = number
+  default     = 5
   description = "Set a retention policy for untagged manifests"
 }
 
