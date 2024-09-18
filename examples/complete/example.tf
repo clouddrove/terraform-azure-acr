@@ -1,14 +1,12 @@
 provider "azurerm" {
   features {}
-  subscription_id            = "01111111111110-11-11-11-11"
-  skip_provider_registration = "true"
+  subscription_id = "068245d4-3c94-42fe-9c4d-9e5e1cabc60c"
 }
 
 provider "azurerm" {
   features {}
-  alias                      = "peer"
-  subscription_id            = "01111111111110-11-11-11-11"
-  skip_provider_registration = "true"
+  alias           = "peer"
+  subscription_id = "068245d4-3c94-42fe-9c4d-9e5e1cabc60c"
 }
 
 
@@ -78,11 +76,12 @@ module "subnet" {
 ##-----------------------------------------------------------------------------
 module "log-analytics" {
   source                           = "clouddrove/log-analytics/azure"
-  version                          = "1.0.1"
+  version                          = "1.1.0"
   name                             = local.name
   environment                      = local.environment
   create_log_analytics_workspace   = true
   log_analytics_workspace_sku      = "PerGB2018"
+  log_analytics_workspace_id       = module.log-analytics.workspace_id
   resource_group_name              = module.resource_group.resource_group_name
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }

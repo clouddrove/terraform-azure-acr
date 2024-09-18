@@ -1,14 +1,12 @@
 provider "azurerm" {
   features {}
-  subscription_id            = "01111111111110-11-11-11-11"
-  skip_provider_registration = "true"
+  subscription_id = "000000-11111-1223-XXX-XXXXXXXXXXXX"
 }
 
 provider "azurerm" {
   features {}
-  alias                      = "peer"
-  subscription_id            = "01111111111110-11-11-11-11"
-  skip_provider_registration = "true"
+  alias           = "peer"
+  subscription_id = "000000-11111-1223-XXX-XXXXXXXXXXXX"
 }
 
 locals {
@@ -77,11 +75,12 @@ module "subnet" {
 ##-----------------------------------------------------------------------------
 module "log-analytics" {
   source                           = "clouddrove/log-analytics/azure"
-  version                          = "1.0.1"
+  version                          = "1.1.0"
   name                             = local.name
   environment                      = local.environment
   create_log_analytics_workspace   = true
   log_analytics_workspace_sku      = "PerGB2018"
+  log_analytics_workspace_id       = module.log-analytics.workspace_id
   resource_group_name              = module.resource_group.resource_group_name
   log_analytics_workspace_location = module.resource_group.resource_group_location
 }
@@ -106,9 +105,11 @@ module "container-registry" {
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
   location            = module.resource_group.resource_group_location
+
   container_registry_config = {
-    name = "cdacr1234" # Name of Container Registry
-    sku  = "Premium"
+    name                     = "cdacr1234" # Name of Container Registry
+    sku                      = "Premium"
+    retention_policy_in_days = 5
   }
   log_analytics_workspace_id = module.log-analytics.workspace_id
   ##----------------------------------------------------------------------------- 
