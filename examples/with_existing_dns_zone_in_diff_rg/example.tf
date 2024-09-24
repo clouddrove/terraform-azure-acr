@@ -1,12 +1,12 @@
 provider "azurerm" {
   features {}
-  subscription_id = "000000-11111-1223-XXX-XXXXXXXXXXXX"
+  subscription_id = "000001-11111-1223-XXX-XXXXXXXXXXXX"
 }
 
 provider "azurerm" {
   features {}
   alias           = "peer"
-  subscription_id = "000000-11111-1223-XXX-XXXXXXXXXXXX"
+  subscription_id = "000001-11111-1223-XXX-XXXXXXXXXXXX"
 }
 
 locals {
