@@ -60,4 +60,3 @@
 | container\_registry\_scope\_map\_id | The ID of the Container Registry scope map |
 | container\_registry\_token\_id | The ID of the Container Registry token |
 | container\_registry\_webhook\_id | The ID of the Container Registry Webhook |
-

@@ -15,7 +15,7 @@ locals {
   environment = "test"
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Resource Group module call
 ## Resource group in which all resources will be deployed.
 ##-----------------------------------------------------------------------------
@@ -29,7 +29,7 @@ module "resource_group" {
   location    = "East US"
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Virtual Network module call.
 ## Virtual Network in which subnet will be created for private endpoint and for which vnet link will be created in private dns zone.
 ##-----------------------------------------------------------------------------
@@ -44,7 +44,7 @@ module "vnet" {
   address_spaces      = ["10.0.0.0/16"]
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Subnet module call.
 ## Subnet in which private endpoint will be created.
 ##-----------------------------------------------------------------------------
@@ -69,9 +69,9 @@ module "subnet" {
   ]
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Log Analytic Module Call.
-## Log Analytic workspace for diagnostic setting. 
+## Log Analytic workspace for diagnostic setting.
 ##-----------------------------------------------------------------------------
 module "log-analytics" {
   source                           = "clouddrove/log-analytics/azure"
@@ -93,7 +93,7 @@ data "azurerm_private_dns_zone" "existing_dns_zone" {
 }
 
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## ACR module call.
 ##-----------------------------------------------------------------------------
 module "container-registry" {
@@ -111,17 +111,17 @@ module "container-registry" {
     sku  = "Premium"
   }
   log_analytics_workspace_id = module.log-analytics.workspace_id
-  ##----------------------------------------------------------------------------- 
+  ##-----------------------------------------------------------------------------
   ## To be mentioned for private endpoint, because private endpoint is enabled by default.
-  ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
+  ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable
   ##-----------------------------------------------------------------------------
   virtual_network_id = module.vnet.vnet_id
   subnet_id          = module.subnet.default_subnet_id[0]
-  ##----------------------------------------------------------------------------- 
+  ##-----------------------------------------------------------------------------
   ## Specify following variales when private dns zone is in different subscription.
   ##-----------------------------------------------------------------------------
   diff_sub                                      = true
-  existing_private_dns_zone                     = "privatelink.azurecr.io" # Name of private dns zone remain same for acr. 
+  existing_private_dns_zone                     = "privatelink.azurecr.io" # Name of private dns zone remain same for acr.
   existing_private_dns_zone_resource_group_name = "example_test_rg"
   existing_private_dns_zone_id                  = [data.azurerm_private_dns_zone.existing_dns_zone.id]
 }

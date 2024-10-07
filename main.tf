@@ -1,5 +1,5 @@
-##----------------------------------------------------------------------------- 
-## Labels module callled that will be used for naming and tags.   
+##-----------------------------------------------------------------------------
+## Labels module callled that will be used for naming and tags.
 ##-----------------------------------------------------------------------------
 module "labels" {
 
@@ -13,8 +13,8 @@ module "labels" {
   repository  = var.repository
 }
 
-##----------------------------------------------------------------------------- 
-## Below resources will create ACR and its components.   
+##-----------------------------------------------------------------------------
+## Below resources will create ACR and its components.
 ##-----------------------------------------------------------------------------
 resource "azurerm_container_registry" "main" {
   provider                      = azurerm.main_sub
@@ -130,8 +130,8 @@ resource "azurerm_container_registry_webhook" "main" {
   }
 }
 
-##----------------------------------------------------------------------------- 
-## Below resources will create Vault_key .   
+##-----------------------------------------------------------------------------
+## Below resources will create Vault_key .
 ##-----------------------------------------------------------------------------
 resource "azurerm_key_vault_key" "kvkey" {
   provider   = azurerm.main_sub
@@ -181,8 +181,8 @@ resource "azurerm_user_assigned_identity" "identity" {
 }
 
 
-##----------------------------------------------------------------------------- 
-## Below resource will create private endpoint resource for ACR.    
+##-----------------------------------------------------------------------------
+## Below resource will create private endpoint resource for ACR.
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_endpoint" "pep1" {
   provider                      = azurerm.main_sub
@@ -209,16 +209,16 @@ resource "azurerm_private_endpoint" "pep1" {
   }
 }
 
-##----------------------------------------------------------------------------- 
-## Locals defined to determine the resource group in which private dns zone must be created or existing private dns zone is present. 
+##-----------------------------------------------------------------------------
+## Locals defined to determine the resource group in which private dns zone must be created or existing private dns zone is present.
 ##-----------------------------------------------------------------------------
 locals {
   valid_rg_name         = var.enable_private_endpoint ? var.existing_private_dns_zone == null ? var.resource_group_name : var.existing_private_dns_zone_resource_group_name : null
   private_dns_zone_name = var.enable_private_endpoint ? var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1[0].name : var.existing_private_dns_zone : null
 }
 
-##----------------------------------------------------------------------------- 
-## Private dns zone will be created if private endpoint is enabled and no existing dns zone is provided.  
+##-----------------------------------------------------------------------------
+## Private dns zone will be created if private endpoint is enabled and no existing dns zone is provided.
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone" "dnszone1" {
   provider            = azurerm.main_sub
@@ -228,10 +228,10 @@ resource "azurerm_private_dns_zone" "dnszone1" {
   tags                = module.labels.tags
 }
 
-##----------------------------------------------------------------------------- 
-## Below vnet link resource will be created when private dns zone is present in same subscription and same resource group or same subscription and different resource group. 
-## Different resource will be used when existing private dns zone is provided. 
-## Resource group and private dns zone in which vnet link is to be created will be decided from condition present in locals and will be passed as locals. 
+##-----------------------------------------------------------------------------
+## Below vnet link resource will be created when private dns zone is present in same subscription and same resource group or same subscription and different resource group.
+## Different resource will be used when existing private dns zone is provided.
+## Resource group and private dns zone in which vnet link is to be created will be decided from condition present in locals and will be passed as locals.
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-same-sub" {
   provider              = azurerm.main_sub
@@ -244,9 +244,9 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-same-sub" {
   tags                  = module.labels.tags
 }
 
-##----------------------------------------------------------------------------- 
-## Below vnet link resource will be created when existing dns zone is present in different subscription. 
-## Add different subscription id in alias sub variable to use provider for that particular subscription. 
+##-----------------------------------------------------------------------------
+## Below vnet link resource will be created when existing dns zone is present in different subscription.
+## Add different subscription id in alias sub variable to use provider for that particular subscription.
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-diff_sub" {
   provider              = azurerm.dns_sub
@@ -258,9 +258,9 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-diff_sub" {
   tags                  = module.labels.tags
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## Below vnet link resource is used when you have to create multiple vnet link in existing dns zone.
-## Call the module again and set enable variable = false and add variables specific only to this resource.   
+## Call the module again and set enable variable = false and add variables specific only to this resource.
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-multi-subs" {
   provider              = azurerm.dns_sub
@@ -272,8 +272,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vent-link-multi-subs" 
   tags                  = module.labels.tags
 }
 
-##----------------------------------------------------------------------------- 
-## Below vnet link resource will be created when you have to add extra vnet link in same subscription. 
+##-----------------------------------------------------------------------------
+## Below vnet link resource will be created when you have to add extra vnet link in same subscription.
 ##-----------------------------------------------------------------------------
 resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
   provider              = azurerm.main_sub
@@ -285,8 +285,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "addon_vent_link" {
   tags                  = module.labels.tags
 }
 
-##----------------------------------------------------------------------------- 
-## Below resource will create diagnostic setting for ACR.   
+##-----------------------------------------------------------------------------
+## Below resource will create diagnostic setting for ACR.
 ##-----------------------------------------------------------------------------
 resource "azurerm_monitor_diagnostic_setting" "acr-diag" {
   provider                   = azurerm.main_sub

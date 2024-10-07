@@ -16,7 +16,7 @@ locals {
   environment = "test"
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## ACR module call.
 ##-----------------------------------------------------------------------------
 module "container-registry" {
@@ -33,9 +33,9 @@ module "container-registry" {
     name = "acr_name" # Name of Container Registry
     sku  = "Premium"
   }
-  ##----------------------------------------------------------------------------- 
+  ##-----------------------------------------------------------------------------
   ## To be mentioned for private endpoint, because private endpoint is enabled by default.
-  ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable  
+  ## To disable private endpoint set 'enable_private_endpoint' variable = false and than no need to specify following variable
   ##-----------------------------------------------------------------------------
   virtual_network_id = "vnet_id"
   subnet_id          = "subnet_id"
