@@ -221,7 +221,7 @@ variable "existing_private_dns_zone_resource_group_name" {
   description = "The name of the existing resource group"
 }
 
-##----------------------------------------------------------------------------- 
+##-----------------------------------------------------------------------------
 ## To be set when existing dns zone is in diffrent subscription.
 ##-----------------------------------------------------------------------------
 variable "diff_sub" {
