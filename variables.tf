@@ -87,15 +87,10 @@ variable "network_rule_set" {
   description = "Manage network rules for Azure Container Registries"
 }
 
-variable "retention_policy" {
-  type = object({
-    days    = optional(number)
-    enabled = optional(bool)
-  })
-  default = {
-    days    = 10
-    enabled = true
-  }
+
+variable "retention_policy_in_days" {
+  type        = number
+  default     = 5
   description = "Set a retention policy for untagged manifests"
 }
 

@@ -52,30 +52,11 @@ resource "azurerm_container_registry" "main" {
         }
       }
 
-      dynamic "virtual_network" {
-        for_each = network_rule_set.value.virtual_network
-        content {
-          action    = "Allow"
-          subnet_id = virtual_network.value.subnet_id
-        }
-      }
     }
   }
 
-  dynamic "retention_policy" {
-    for_each = var.retention_policy != null && var.container_registry_config.sku == "Premium" ? [var.retention_policy] : []
-    content {
-      days    = lookup(retention_policy.value, "days", 7)
-      enabled = lookup(retention_policy.value, "enabled", true)
-    }
-  }
-
-  dynamic "trust_policy" {
-    for_each = var.enable_content_trust ? [1] : []
-    content {
-      enabled = var.enable_content_trust
-    }
-  }
+  trust_policy_enabled     = var.container_registry_config.sku == "Premium" ? var.enable_content_trust : false
+  retention_policy_in_days = var.retention_policy_in_days != null && var.container_registry_config.sku == "Premium" ? var.retention_policy_in_days : null
 
   identity {
     type         = var.identity_ids != null || var.encryption ? "SystemAssigned, UserAssigned" : "SystemAssigned"
@@ -85,7 +66,6 @@ resource "azurerm_container_registry" "main" {
   dynamic "encryption" {
     for_each = var.encryption && var.container_registry_config.sku == "Premium" ? ["encryption"] : []
     content {
-      enabled            = true
       key_vault_key_id   = azurerm_key_vault_key.kvkey[0].id
       identity_client_id = azurerm_user_assigned_identity.identity[0].client_id
     }
