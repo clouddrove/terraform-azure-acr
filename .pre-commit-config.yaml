@@ -7,7 +7,8 @@ repos:
         language: script
       #- id: terraform_validate
       - id: terraform_docs
-        additional_dependencies: ['terraform-docs/terraform-docs']
+        entry: hooks/terraform_docs.sh
+        language: script
         args:
           - '--args=--lockfile=false'
       - id: terraform_tflint
