@@ -3,11 +3,14 @@ repos:
     rev: v1.96.1
     hooks:
       - id: terraform_fmt
+        additional_dependencies: ['hashicorp/terraform']
       #- id: terraform_validate
       - id: terraform_docs
+        additional_dependencies: ['terraform-docs/terraform-docs']
         args:
           - '--args=--lockfile=false'
       - id: terraform_tflint
+        additional_dependencies: ['terraform-linters/tflint']
         args:
           - '--args=--only=terraform_deprecated_interpolation'
           - '--args=--only=terraform_deprecated_index'
