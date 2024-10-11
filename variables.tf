@@ -87,15 +87,10 @@ variable "network_rule_set" {
   description = "Manage network rules for Azure Container Registries"
 }
 
-variable "retention_policy" {
-  type = object({
-    days    = optional(number)
-    enabled = optional(bool)
-  })
-  default = {
-    days    = 10
-    enabled = true
-  }
+
+variable "retention_policy_in_days" {
+  type        = number
+  default     = 5
   description = "Set a retention policy for untagged manifests"
 }
 
@@ -114,6 +109,7 @@ variable "identity_ids" {
 variable "encryption" {
   type    = bool
   default = false
+  description = "Flag to enable encryption in acr."
 }
 
 variable "scope_map" {
@@ -139,7 +135,7 @@ variable "container_registry_webhooks" {
 variable "key_vault_id" {
   type        = string
   default     = null
-  description = ""
+  description = "Keyvault id in which encryption key will be created."
 }
 
 variable "enable_rotation_policy" {
@@ -151,6 +147,7 @@ variable "enable_rotation_policy" {
 variable "key_vault_rbac_auth_enabled" {
   type    = bool
   default = true
+  description = "Flag to tell whether key vault used role based access or not."
 }
 
 ##-----------------------------------------------------------------------------
@@ -171,6 +168,7 @@ variable "existing_private_dns_zone" {
 variable "private_dns_name" {
   type    = string
   default = "privatelink.azurecr.io"
+  description = "Private DNS name for ACR."
 }
 
 variable "subnet_id" {
