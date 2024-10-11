@@ -10,6 +10,7 @@ repos:
         args:
           - '--args=--lockfile=false'
       - id: terraform_tflint
+        language: python
         additional_dependencies: ['terraform-linters/tflint']
         args:
           - '--args=--only=terraform_deprecated_interpolation'
