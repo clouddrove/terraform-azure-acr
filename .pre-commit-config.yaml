@@ -3,7 +3,8 @@ repos:
     rev: v1.96.1
     hooks:
       - id: terraform_fmt
-        additional_dependencies: ['hashicorp/terraform']
+        entry: hooks/terraform_fmt.sh
+        language: script
       #- id: terraform_validate
       - id: terraform_docs
         additional_dependencies: ['terraform-docs/terraform-docs']
