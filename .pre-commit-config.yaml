@@ -5,16 +5,19 @@ repos:
       - id: terraform_fmt
         entry: hooks/terraform_fmt.sh
         language: script
+        additional_dependencies: ['hashicorp/terraform']
       #- id: terraform_validate
       - id: terraform_docs
         entry: hooks/terraform_docs.sh
         language: script
+        additional_dependencies: ['terraform-docs/terraform-docs']
         args:
           - '--args=--lockfile=false'
       - id: terraform_tflint
         language: script
         require_serial: true
         entry: hooks/terraform_tflint.sh
+        additional_dependencies: ['terraform-linters/tflint']
         args:
           - '--args=--only=terraform_deprecated_interpolation'
           - '--args=--only=terraform_deprecated_index'
