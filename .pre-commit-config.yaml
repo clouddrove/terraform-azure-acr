@@ -9,12 +9,12 @@ repos:
       #- id: terraform_validate
       - id: terraform_docs
         entry: hooks/terraform_docs.sh
-        language: script
+        language: system
         additional_dependencies: ['terraform-docs/terraform-docs']
         args:
           - '--args=--lockfile=false'
       - id: terraform_tflint
-        language: script
+        language: system
         require_serial: true
         entry: hooks/terraform_tflint.sh
         additional_dependencies: ['terraform-linters/tflint']
