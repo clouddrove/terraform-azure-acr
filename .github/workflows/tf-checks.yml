@@ -6,21 +6,21 @@ on:
   workflow_dispatch:
 jobs:
   basic-example:
-    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.9
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.3.0
     with:
       working_directory: './examples/basic/'
 
   complete-example:
-    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.9
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.3.0
     with:
       working_directory: './examples/complete/'
 
   with_existing_dns_zone_in_diff_rg:
-    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.9
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.3.0
     with:
       working_directory: './examples/with_existing_dns_zone_in_diff_rg/'
 
   with_existing_dns_zone_in_diff_subs:
-    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.2.9
+    uses: clouddrove/github-shared-workflows/.github/workflows/tf-checks.yml@1.3.0
     with:
       working_directory: './examples/with_existing_dns_zone_in_diff_subs/'
