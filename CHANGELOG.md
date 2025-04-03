@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-04-03
+### :construction_worker: Build System
+- [`b6fd01a`](https://github.com/clouddrove/terraform-azure-acr/commit/b6fd01a6eb172d505b24e5a1668c2d61f4c8b7c0) - **deps**: bump clouddrove/github-shared-workflows from 1.2.8 to 1.2.9 *(commit by [@dependabot[bot]](https://github.com/apps/dependabot))*
+- [`b9d6a22`](https://github.com/clouddrove/terraform-azure-acr/commit/b9d6a223d2fe975b5d4e9a8dc240162efed8c918) - **deps**: bump clouddrove/github-shared-workflows from 1.2.9 to 1.3.0 *(commit by [@dependabot[bot]](https://github.com/apps/dependabot))*
+
+### :memo: Documentation Changes
+- [`cb80e70`](https://github.com/clouddrove/terraform-azure-acr/commit/cb80e70204b4340cb2eab337e657bf1f3e1e8c83) - update CHANGELOG.md for 2.0.0 *(commit by [@clouddrove-ci](https://github.com/clouddrove-ci))*
+
+
 ## [2.0.0] - 2024-10-28
 ### :sparkles: New Features
 - [`87451c3`](https://github.com/clouddrove/terraform-azure-acr/commit/87451c3bb730872ce105858690969e275684d1e0) - Added support for Acr encryption *(commit by [@pranaydeokar](https://github.com/pranaydeokar))*
@@ -79,3 +88,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [1.0.2]: https://github.com/clouddrove/terraform-azure-acr/compare/1.0.1...1.0.2
 [2.0.0]: https://github.com/clouddrove/terraform-azure-acr/compare/1.0.2...2.0.0
+[2.1.0]: https://github.com/clouddrove/terraform-azure-acr/compare/2.0.0...2.1.0
