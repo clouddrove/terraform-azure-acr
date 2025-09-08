@@ -101,7 +101,7 @@ module "vault" {
     azurerm.dns_sub  = azurerm.peer, #change this to other alias if dns hosted in other subscription.
     azurerm.main_sub = azurerm
   }
-  version             = "1.3.0"
+  version             = "1.3.1"
   name                = "apptest4rds3477"
   environment         = local.environment
   resource_group_name = module.resource_group.resource_group_name
